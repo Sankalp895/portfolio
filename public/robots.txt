@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sankalpsingh.dev/sitemap-index.xml
+Sitemap: https://sankalpvertex.com/sitemap-index.xml

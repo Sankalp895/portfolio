@@ -6,7 +6,7 @@ import sitemap from '@astrojs/sitemap';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  site: 'https://sankalpsingh.dev',
+  site: 'https://sankalpvertex.com',
   integrations: [react(), mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
