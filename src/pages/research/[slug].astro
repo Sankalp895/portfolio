@@ -1,12 +1,11 @@
 ---
 import { getCollection, render } from 'astro:content';
-import Base from '@/layouts/Base.astro';
-import ConfirmNote from '@/components/cards/ConfirmNote.astro';
+import Layout from '@/layouts/Layout.astro';
+import ConfirmNote from '@/components/ConfirmNote.astro';
 import Figure from '@/components/research/Figure.astro';
 import InlineFigure from '@/components/research/InlineFigure.astro';
 import { grokkingFigures, surrogateFigures } from '@/data/research/figures';
 import { grokkingFiles, surrogateFiles } from '@/data/research/files';
-import { hasResumePdf } from '@/data/assets';
 
 export async function getStaticPaths() {
   const papers = await getCollection('research');
@@ -29,10 +28,10 @@ const paperDir = isGrokking ? 'grokking' : 'surrogate-trust-audit';
 // the paper's figure map.
 const heroInline = d.heroFigure.startsWith('inline:') ? d.heroFigure.slice(7) : null;
 const hero = heroInline ? null : figures[d.heroFigure];
-const heroCaption = entry.id === 'lead-time-is-not-a-detection'
+const heroCaption = isGrokking
   ? 'Train accuracy reaches 1.0 by step 500. Test accuracy sits at chance for thousands of steps, then jumps at 4,100. The shaded band is the gap the paper is about.'
   : 'The preregistered test. Every indicator class sits left of zero against the input-only null, and no interval crosses it.';
-const heroSource = entry.id === 'lead-time-is-not-a-detection' ? 'logs/single.csv' : 'tables/primary_h4.csv';
+const heroSource = isGrokking ? 'logs/single.csv' : 'tables/primary_h4.csv';
 
 // Entries in the Rigor Log that came out of this paper.
 const log = (await getCollection('rigor-log'))
@@ -45,25 +44,25 @@ const codeLink = d.links.find((l) => l.label === 'Code' && !l.confirm && !l.notP
 const codeNotPublic = d.links.some((l) => l.label === 'Code' && l.notPublic);
 ---
 
-<Base title={d.title} description={d.oneLine} wide={false}>
+<Layout title={d.title} description={d.oneLine}>
   <article>
-    <header class="shell top">
+    <header class="shell-read top">
       <nav class="crumbs"><a href="/research/">Research</a></nav>
 
-      <span class="badge badge-review">Preprint</span>
+      <span class="badge badge-accent">Preprint</span>
       <h1>{d.title}</h1>
       {d.subtitle && <p class="sub">{d.subtitle}</p>}
       <p class="one">{d.oneLine}</p>
 
       <div class="acts">
         {pdfLink ? (
-          <a href={pdfLink.href} class="btn btn-accent" target="_blank" rel="noopener">Read the PDF</a>
+          <a href={pdfLink.href} class="btn btn-primary" target="_blank" rel="noopener">Read the PDF</a>
         ) : (
-          <span class="badge badge-review">PDF: to add</span>
+          <span class="badge badge-todo">PDF: to add</span>
         )}
-        {codeLink && <a href={codeLink.href} class="btn" target="_blank" rel="noopener">Code on GitHub</a>}
-        {codeNotPublic && <span class="badge badge-planned">Code not public</span>}
-        <button type="button" class="btn copy-bib" data-bib={d.bibtex}>Copy BibTeX</button>
+        {codeLink && <a href={codeLink.href} class="btn btn-ghost" target="_blank" rel="noopener">Code on GitHub</a>}
+        {codeNotPublic && <span class="badge badge-quiet">Code not public</span>}
+        <button type="button" class="btn btn-ghost copy-bib" data-bib={d.bibtex}>Copy BibTeX</button>
       </div>
 
       <p class="honest">{d.statusDetail} Not peer reviewed.</p>
@@ -81,7 +80,7 @@ const codeNotPublic = d.links.some((l) => l.label === 'Code' && l.notPublic);
       <div class="rgrid">
         {d.keyResults.map((k) => (
           <div class="r">
-            <span class="rv metric">{k.value}</span>
+            <span class="rv">{k.value}</span>
             <span class="rl">{k.label}</span>
             {k.source && <span class="rs mono">{k.source}</span>}
           </div>
@@ -101,7 +100,7 @@ const codeNotPublic = d.links.some((l) => l.label === 'Code' && l.notPublic);
 
       <div class="col">
         <ConfirmNote items={d.confirm} />
-        <div class="prose-paper"><Content /></div>
+        <div class="prose-apple"><Content /></div>
 
         {log.length > 0 && (
           <section class="block">
@@ -116,7 +115,7 @@ const codeNotPublic = d.links.some((l) => l.label === 'Code' && l.notPublic);
                 </div>
               ))}
             </div>
-            <a href="/rigor-log/" class="link-arrow">The whole Rigor Log</a>
+            <a href="/rigor-log/" class="more">The whole Rigor Log</a>
           </section>
         )}
 
@@ -145,102 +144,127 @@ const codeNotPublic = d.links.some((l) => l.label === 'Code' && l.notPublic);
     </div>
 
     <nav class="shell pager">
-      <a href="/research/" class="pg"><span class="label">Back</span><span>All research</span></a>
+      <a href="/research/" class="pg"><span class="label mono">Back</span><span>All research</span></a>
       {other && other.id !== entry.id && (
-        <a href={`/research/${other.id}/`} class="pg right"><span class="label">The other paper</span><span>{other.data.title}</span></a>
+        <a href={`/research/${other.id}/`} class="pg right"><span class="label mono">The other paper</span><span>{other.data.title}</span></a>
       )}
     </nav>
   </article>
-</Base>
+</Layout>
 
 <style>
-  .top { padding-top: clamp(1.75rem, 4vw, 3rem); }
+  .top { padding-top: clamp(2rem, 5vw, 4rem); }
 
   .crumbs { margin-bottom: 1.75rem; }
-  .crumbs a { font-size: 0.6875rem; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); text-decoration: none; }
+  .crumbs a {
+    font-size: 0.75rem;
+    letter-spacing: 0.02em;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
   .crumbs a:hover { color: var(--accent); }
 
   h1 {
-    font-size: clamp(2.1rem, 5.5vw, 3.4rem);
-    margin: 0.9rem 0 0.5rem;
-    max-width: 22ch;
+    font-size: var(--step-5);
+    letter-spacing: -0.03em;
+    line-height: 1.04;
+    margin: 0.9rem 0 0.6rem;
+    max-width: 18ch;
   }
 
-  .sub { margin: 0 0 1.25rem; font-size: 1.15rem; color: var(--muted); font-family: var(--font-serif); }
+  .sub {
+    margin: 0 0 1.5rem;
+    font-size: var(--step-2);
+    letter-spacing: -0.02em;
+    color: var(--ink-soft);
+  }
 
   .one {
     margin: 0;
-    font-family: var(--font-serif);
-    font-size: 1.2rem;
-    line-height: 1.55;
-    max-width: 54ch;
+    font-size: var(--step-1);
+    line-height: 1.5;
+    letter-spacing: -0.01em;
+    max-width: 46ch;
   }
 
-  .acts { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 1.9rem 0 1rem; }
-  .honest { margin: 0; font-size: 0.75rem; color: var(--muted); }
+  .acts { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: center; margin: 2.25rem 0 1rem; }
+  .honest { margin: 0; font-size: 0.8125rem; color: var(--ink-faint); }
 
-  .hero-fig { margin-top: 1rem; }
+  .hero-fig { margin-top: 2.5rem; }
 
-  .results-strip { margin-top: 2rem; }
+  .results-strip { margin-top: 3rem; }
 
   .rgrid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
     gap: 1px;
-    background: var(--grid);
-    border: var(--rule);
-    border-radius: var(--radius);
+    background: var(--hairline);
+    border-radius: 1.25rem;
     overflow: hidden;
+    box-shadow: var(--shadow-card);
   }
 
-  .r { background: var(--panel); padding: 1.1rem 1.15rem; display: flex; flex-direction: column; gap: 0.3rem; }
-  .rv { font-size: 1.4rem; line-height: 1.15; }
-  .rl { font-size: 0.75rem; color: var(--muted); line-height: 1.45; }
-  .rs { font-size: 0.5625rem; color: var(--muted); opacity: 0.75; margin-top: 0.25rem; }
+  .r { background: var(--surface-solid); padding: 1.35rem 1.25rem; display: flex; flex-direction: column; gap: 0.35rem; }
+  .rv { font-size: 1.75rem; letter-spacing: -0.02em; line-height: 1.1; color: var(--accent); }
+  .rl { font-size: 0.8125rem; color: var(--ink-soft); line-height: 1.45; }
+  .rs { font-size: 0.625rem; color: var(--ink-faint); margin-top: 0.3rem; }
 
   .reading {
     display: grid;
     grid-template-columns: 13rem minmax(0, 1fr);
-    gap: 3rem;
-    margin-top: 3.5rem;
+    gap: 3.5rem;
+    margin-top: 4rem;
   }
 
-  .toc { position: sticky; top: 100px; align-self: start; }
-  .toc nav { display: flex; flex-direction: column; border-left: var(--rule); }
+  .toc { position: sticky; top: 92px; align-self: start; }
+  .toc nav { display: flex; flex-direction: column; border-left: 1px solid var(--hairline); }
 
   .toc-link {
     font-size: 0.8125rem;
-    color: var(--muted);
+    color: var(--ink-soft);
     text-decoration: none;
-    padding: 0.42rem 0 0.42rem 0.9rem;
+    padding: 0.45rem 0 0.45rem 1rem;
     margin-left: -1px;
     border-left: 1px solid transparent;
-    transition: color 0.18s ease, border-color 0.18s ease;
+    transition: color 0.2s ease, border-color 0.2s ease;
   }
 
   .toc-link:hover { color: var(--ink); }
   .toc-link.on { color: var(--accent); border-left-color: var(--accent); }
 
   .col { min-width: 0; }
-  .block { margin-top: 3.5rem; }
+  .block { margin-top: 4rem; }
 
   .sec {
-    font-size: clamp(1.35rem, 3vw, 1.75rem);
-    padding-top: 1.25rem;
-    border-top: var(--rule);
-    margin-bottom: 1.25rem;
+    font-size: var(--step-3);
+    letter-spacing: -0.02em;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+    margin-bottom: 1.5rem;
   }
 
-  .logs { display: grid; gap: 1rem; margin-bottom: 1.25rem; }
-  .logitem { border-left: 2px solid var(--accent); padding: 0.15rem 0 0.15rem 1rem; }
-  .logitem h3 { font-size: 1.05rem; margin: 0 0 0.45rem; }
-  .lf, .ls { margin: 0 0 0.35rem; font-size: 0.875rem; line-height: 1.55; }
-  .lf { color: var(--muted); }
-  .lk { display: inline-block; font-family: var(--font-mono); font-size: 0.625rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); width: 4.2rem; }
+  .logs { display: grid; gap: 1.1rem; margin-bottom: 1.25rem; }
+  .logitem { border-left: 2px solid var(--accent); padding: 0.15rem 0 0.15rem 1.1rem; }
+  .logitem h3 { font-size: 1.0625rem; letter-spacing: -0.01em; margin: 0 0 0.5rem; }
+  .lf, .ls { margin: 0 0 0.35rem; font-size: 0.9375rem; line-height: 1.55; }
+  .lf { color: var(--ink-soft); }
+  .lk {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    width: 4.4rem;
+  }
   .lk.two { color: var(--verified); }
-  .lsrc { margin: 0.5rem 0 0; font-size: 0.625rem; color: var(--muted); }
+  .lsrc { margin: 0.5rem 0 0; font-size: 0.6875rem; color: var(--ink-faint); }
 
-  .fnote { margin: 0 0 1.25rem; font-size: 0.875rem; color: var(--muted); line-height: 1.6; }
+  .more { font-size: 0.9375rem; color: var(--accent); text-decoration: none; }
+  .more::after { content: ' \2192'; }
+  .more:hover { text-decoration: underline; }
+
+  .fnote { margin: 0 0 1.5rem; font-size: 0.9375rem; color: var(--ink-soft); line-height: 1.6; }
 
   .files { list-style: none; margin: 0; padding: 0; }
 
@@ -248,21 +272,36 @@ const codeNotPublic = d.links.some((l) => l.label === 'Code' && l.notPublic);
     display: grid;
     grid-template-columns: minmax(0, 15rem) minmax(0, 1fr) auto;
     gap: 1rem;
-    padding: 0.6rem 0;
-    border-bottom: var(--rule);
+    padding: 0.7rem 0;
+    border-bottom: 1px solid var(--hairline);
     align-items: baseline;
   }
 
   .fp { font-size: 0.75rem; color: var(--ink); word-break: break-all; }
-  .fd { font-size: 0.8125rem; color: var(--muted); line-height: 1.5; }
-  .fs { font-size: 0.6875rem; color: var(--muted); white-space: nowrap; }
+  .fd { font-size: 0.8125rem; color: var(--ink-soft); line-height: 1.5; }
+  .fs { font-size: 0.6875rem; color: var(--ink-faint); white-space: nowrap; }
 
-  .stack { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0; margin: 0; }
-  .stack li { font-size: 0.75rem; color: var(--muted); border: var(--rule); border-radius: 2px; padding: 0.3em 0.6em; }
+  .stack { list-style: none; display: flex; flex-wrap: wrap; gap: 0.45rem; padding: 0; margin: 0; }
+  .stack li {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 0.35em 0.85em;
+  }
 
-  .pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 4rem; padding-top: 1.25rem; border-top: var(--rule); }
-  .pg { display: flex; flex-direction: column; gap: 0.25rem; text-decoration: none; font-size: 0.9375rem; max-width: 45%; }
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .pg { display: flex; flex-direction: column; gap: 0.3rem; text-decoration: none; font-size: 1rem; max-width: 45%; }
   .pg.right { text-align: right; margin-left: auto; }
+  .pg .label { font-size: 0.625rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); }
   .pg:hover { color: var(--accent); }
 
   @media (max-width: 1000px) {

@@ -87,7 +87,7 @@ export const timeline: TimelineEntry[] = [
     year: '2025 to 2026',
     title: 'The simulation years: SkyScout, the swarm sim, two papers',
     body:
-      'A Mars scout drone with its own CAD, estimator and planner. A drone-swarm threat simulator where a GAN tries to hide attacks. Two papers, both of which report a result that is less exciting than the one I went looking for.',
+      'A Mars scout drone with its own CAD, estimator and planner. A drone-swarm threat simulator where a GAN learns to hide attacks. Two preprints, one on grokking predictor signals and one on trust signals for neural PDE surrogates.',
     kind: 'build',
   },
   {

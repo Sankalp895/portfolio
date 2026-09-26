@@ -50,12 +50,12 @@ export default function EskfDemo() {
       last = now;
 
       const css = getComputedStyle(document.documentElement);
-      const ink = css.getPropertyValue('--ink').trim() || '#e6e3da';
-      const muted = css.getPropertyValue('--muted').trim() || '#8a8f9c';
-      const accent = css.getPropertyValue('--accent').trim() || '#d9582b';
-      const warn = css.getPropertyValue('--warn').trim() || '#f2b84b';
-      const verified = css.getPropertyValue('--verified').trim() || '#5bd69a';
-      const grid = css.getPropertyValue('--grid').trim() || '#1e2430';
+      const ink = css.getPropertyValue('--ink').trim() || '#1d1d1f';
+      const muted = css.getPropertyValue('--ink-faint').trim() || '#86868b';
+      const accent = css.getPropertyValue('--accent').trim() || '#0284c7';
+      const warn = css.getPropertyValue('--accent-bright').trim() || '#7dd3fc';
+      const verified = css.getPropertyValue('--accent').trim() || '#0284c7';
+      const grid = css.getPropertyValue('--hairline').trim() || 'rgba(0,0,0,0.08)';
 
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const w = cv.clientWidth;
@@ -180,7 +180,7 @@ export default function EskfDemo() {
 
       <div className="foot">
         <span className="label">Gap between truth and estimate</span>
-        <span className="metric tabular" style={{ color: filterOn ? 'var(--verified)' : 'var(--warn)' }}>
+        <span className="metric tabular" style={{ color: filterOn ? 'var(--accent)' : 'var(--accent-bright)' }}>
           {err.toFixed(2)} m
         </span>
       </div>
@@ -191,20 +191,20 @@ export default function EskfDemo() {
       </p>
 
       <style>{`
-        .eskf { border: 1px solid var(--grid); border-radius: var(--radius); background: var(--panel); padding: 0.9rem; }
+        .eskf { border: 1px solid var(--hairline); border-radius: 1.25rem; background: var(--surface-solid); padding: 1.25rem; }
         .bar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 0.6rem; }
-        .sw { display: flex; border: 1px solid var(--grid); border-radius: var(--radius); overflow: hidden; }
+        .sw { display: flex; border: 1px solid var(--hairline); border-radius: 999px; overflow: hidden; padding: 3px; gap: 2px; }
         .sw button {
-          font-family: var(--font-mono); font-size: 0.6875rem; padding: 0.3rem 0.65rem;
-          border: 0; background: none; color: var(--muted); cursor: pointer;
+          font-size: 0.75rem; font-weight: 500; padding: 0.3rem 0.8rem;
+          border: 0; border-radius: 999px; background: none; color: var(--ink-soft); cursor: pointer;
         }
         .sw button.on { background: var(--accent); color: #fff; }
         .cv { width: 100%; height: 240px; display: block; }
         .foot {
           display: flex; align-items: baseline; justify-content: space-between;
-          gap: 1rem; padding-top: 0.6rem; margin-top: 0.4rem; border-top: 1px solid var(--grid);
+          gap: 1rem; padding-top: 0.6rem; margin-top: 0.4rem; border-top: 1px solid var(--hairline);
         }
-        .note { margin: 0.55rem 0 0; font-size: 0.75rem; color: var(--muted); line-height: 1.55; }
+        .note { margin: 0.55rem 0 0; font-size: 0.75rem; color: var(--ink-faint); line-height: 1.55; }
       `}</style>
     </div>
   );

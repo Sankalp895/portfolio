@@ -1,0 +1,36 @@
+---
+interface Props {
+  eyebrow: string;
+  title: string;
+  note?: string;
+  href?: string;
+  hrefLabel?: string;
+}
+const { eyebrow, title, note, href, hrefLabel } = Astro.props;
+---
+
+<header class="sh reveal">
+  <p class="eyebrow">{eyebrow}</p>
+  <div class="row">
+    <h2>{title}</h2>
+    {href && <a href={href} class="more">{hrefLabel ?? 'See all'}</a>}
+  </div>
+  {note && <p class="note">{note}</p>}
+</header>
+
+<style>
+  .sh { margin-bottom: 2.5rem; }
+  .row { display: flex; align-items: baseline; justify-content: space-between; gap: 1.5rem; flex-wrap: wrap; }
+
+  h2 {
+    font-size: clamp(1.9rem, 4.5vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    margin: 0.5rem 0 0;
+  }
+
+  .note { margin: 0.9rem 0 0; font-size: 1.0625rem; color: var(--ink-soft); max-width: 56ch; line-height: 1.6; }
+
+  .more { font-size: 0.9375rem; color: var(--accent); text-decoration: none; white-space: nowrap; }
+  .more:hover { text-decoration: underline; }
+</style>

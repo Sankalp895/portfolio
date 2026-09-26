@@ -66,9 +66,9 @@ const research = defineCollection({
     year: z.string(),
     /** One paragraph, plain English, no jargon without a gloss. */
     plainAbstract: z.string(),
-    /** The single finding, for the hero. One sentence. */
+    /** The result in one sentence, for the hero and the page description. */
     oneLine: z.string(),
-    /** Key into the paper's figure map, used as the hero visual. */
+    /** A key in the paper's figure map, or "inline:<name>" for a redrawn SVG. */
     heroFigure: z.string(),
     keyResults: z.array(proofPoint).min(1),
     stack: z.array(z.string()).min(1),

@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import Base from '@/layouts/Base.astro';
+import Layout from '@/layouts/Layout.astro';
 import { profile, spokenLanguages, certifications } from '@/data/profile';
 import { experience } from '@/data/experience';
 import { skillGroups } from '@/data/skills';
@@ -11,28 +11,28 @@ const research = (await getCollection('research')).sort((a, b) => a.data.order -
 const selected = missions.filter((m) => m.data.flagship);
 ---
 
-<Base
-  title="Resume"
-  description="Sankalp Singh: B.Tech in AI and Data Science, GGSIPU Delhi. Simulation, estimation and machine learning. Resume in HTML, with a PDF download."
-  wide={false}
->
-  <section class="shell bar">
+<Layout title="Resume" description="Sankalp Singh: B.Tech in AI and Data Science, GGSIPU Delhi. Simulation, estimation and machine learning. Resume in HTML, with a PDF download.">
+  <section class="shell-read bar">
     <div>
-      <p class="label">Resume</p>
-      <p class="note">{hasResumePdf ? "The PDF is the LaTeX build. This page is the same content, readable on a phone." : "The PDF is not in the repo yet. Drop the LaTeX build at public/resume/Sankalp_Singh_CV.pdf and this becomes a download button."}</p>
+      <p class="eyebrow">Resume</p>
+      {!hasResumePdf && (
+        <p class="note">
+          The PDF is not in the repo yet. Drop the LaTeX build at public/resume/Sankalp_Singh_CV.pdf and this becomes a download button.
+        </p>
+      )}
     </div>
     {hasResumePdf ? (
-      <a href={profile.resumePath} class="btn btn-accent" download>Download PDF</a>
+      <a href={profile.resumePath} class="btn btn-primary" download>Download PDF</a>
     ) : (
-      <span class="badge badge-review">TODO: add the PDF</span>
+      <span class="badge badge-todo">TODO: add the PDF</span>
     )}
   </section>
 
-  <article class="shell cv">
+  <article class="shell-read cv">
     <header class="cvhead">
       <h1>{profile.name}</h1>
       <p class="tag">{profile.resumeProfile}</p>
-      <ul class="contact mono">
+      <ul class="contact">
         <li><a href={`mailto:${profile.email}`}>{profile.email}</a></li>
         <li><a href={profile.github} target="_blank" rel="noopener">{profile.githubHandle}</a></li>
         <li><a href={profile.linkedin} target="_blank" rel="noopener">{profile.linkedinHandle}</a></li>
@@ -45,11 +45,26 @@ const selected = missions.filter((m) => m.data.flagship);
       <div class="row">
         <div>
           <h3>B.Tech, Artificial Intelligence and Data Science</h3>
-          <p class="sub">GGSIPU Delhi. First two years: mathematics and physics.</p>
+          <p class="sub">Guru Gobind Singh Indraprastha University, Delhi</p>
         </div>
         <span class="when mono">Awarded May 2026</span>
       </div>
       <p class="note">Sep 2022 to May 2026. First two years in core mathematics and physics. Dissertation: CompliSense, supervised by Dr. Ashish Joshi.</p>
+    </section>
+
+    <section class="sec">
+      <h2>Research (preprints)</h2>
+      {research.map((r) => (
+        <div class="item">
+          <div class="row">
+            <div>
+              <h3><a href={`/research/${r.id}/`}>{r.data.title}</a></h3>
+              <p class="sub">{r.data.statusDetail}</p>
+            </div>
+            <span class="when mono">{r.data.year}</span>
+          </div>
+        </div>
+      ))}
     </section>
 
     <section class="sec">
@@ -63,9 +78,7 @@ const selected = missions.filter((m) => m.data.flagship);
             </div>
             <span class="when mono">{e.start} to {e.end}</span>
           </div>
-          <ul class="bul">
-            {e.highlights.map((h) => <li>{h}</li>)}
-          </ul>
+          <ul class="bul">{e.highlights.map((h) => <li>{h}</li>)}</ul>
         </div>
       ))}
     </section>
@@ -83,7 +96,7 @@ const selected = missions.filter((m) => m.data.flagship);
           </div>
           <ul class="bul">
             {m.data.proof.slice(0, 3).map((p) => (
-              <li><span class="metric">{p.value}</span> {p.label}</li>
+              <li><strong>{p.value}</strong> {p.label}</li>
             ))}
           </ul>
           <p class="stackline mono">{m.data.stack.join(' / ')}</p>
@@ -91,23 +104,8 @@ const selected = missions.filter((m) => m.data.flagship);
       ))}
       <p class="note">
         The other {missions.length - selected.length} are on the <a href="/missions/">missions page</a>:
-        {missions.filter((m) => !m.data.flagship).map((m) => m.data.title).join(', ')}.
+        {' '}{missions.filter((m) => !m.data.flagship).map((m) => m.data.title).join(', ')}.
       </p>
-    </section>
-
-    <section class="sec">
-      <h2>Research</h2>
-      {research.map((r) => (
-        <div class="item">
-          <div class="row">
-            <div>
-              <h3><a href={`/research/${r.id}/`}>{r.data.title}</a></h3>
-              <p class="sub">{r.data.statusDetail}</p>
-            </div>
-            <span class="when mono">{r.data.year}</span>
-          </div>
-        </div>
-      ))}
     </section>
 
     <section class="sec">
@@ -115,8 +113,8 @@ const selected = missions.filter((m) => m.data.flagship);
       <dl class="skills">
         {skillGroups.map((g) => (
           <div>
-            <dt class="label">{g.label}</dt>
-            <dd>{g.skills.map((s) => s.name + (s.confirm ? ' (confirm)' : '')).join(', ')}</dd>
+            <dt>{g.label}</dt>
+            <dd>{g.skills.map((s) => s.name).join(', ')}</dd>
           </div>
         ))}
       </dl>
@@ -131,89 +129,68 @@ const selected = missions.filter((m) => m.data.flagship);
       </ul>
     </section>
   </article>
-</Base>
+</Layout>
 
 <style>
+  /* A grid, not a wrapping flex row. As a flex row the button jumped below the
+     text the moment the webfont made it wider, which moved the whole page down. */
   .bar {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    padding-top: clamp(2rem, 5vw, 3rem);
-    padding-bottom: 1.25rem;
-    border-bottom: var(--rule);
-    margin-bottom: 2.5rem;
+    gap: 2rem;
+    padding-top: 8rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--hairline);
+    margin-bottom: 3rem;
   }
 
-  .note { margin: 0.4rem 0 0; font-size: 0.8125rem; color: var(--muted); max-width: 60ch; line-height: 1.55; }
+  @media (max-width: 620px) {
+    .bar { grid-template-columns: 1fr; gap: 1.25rem; justify-items: start; }
+  }
+
+  .note { margin: 0.5rem 0 0; font-size: 0.8125rem; color: var(--ink-faint); max-width: 58ch; line-height: 1.6; }
   .note a { color: var(--accent); }
 
-  .cvhead { margin-bottom: 2.5rem; }
+  .cvhead { margin-bottom: 3.5rem; }
+  h1 { font-size: clamp(2.25rem, 6vw, 3.5rem); font-weight: 600; letter-spacing: -0.04em; margin: 0 0 1rem; }
+  .tag { margin: 0 0 1.5rem; font-size: 1.0625rem; color: var(--ink-soft); line-height: 1.7; }
 
-  h1 { font-size: clamp(2rem, 4.5vw, 2.8rem); margin: 0 0 0.5rem; }
-
-  .tag {
-    margin: 0 0 1rem;
-    font-family: var(--font-serif);
-    font-size: 1.0625rem;
-    color: var(--muted);
-    max-width: 52ch;
-    line-height: 1.5;
-  }
-
-  .contact {
-    list-style: none;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.25rem;
-    padding: 0;
-    margin: 0;
-    font-size: 0.75rem;
-    color: var(--muted);
-  }
-
-  .contact a { color: var(--muted); text-decoration: none; border-bottom: 1px solid var(--grid); }
+  .contact { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; padding: 0; margin: 0; font-size: 0.8125rem; color: var(--ink-faint); }
+  .contact a { color: var(--ink-faint); text-decoration: none; border-bottom: 1px solid var(--hairline); }
   .contact a:hover { color: var(--accent); }
 
-  .sec { margin-bottom: 2.5rem; }
+  .sec { margin-bottom: 3rem; }
 
   .sec h2 {
-    font-family: var(--font-mono);
     font-size: 0.6875rem;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--accent);
-    padding-top: 0.9rem;
-    border-top: var(--rule);
-    margin: 0 0 1.1rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+    margin: 0 0 1.5rem;
   }
 
-  .item { margin-bottom: 1.5rem; }
-  .item:last-child { margin-bottom: 0; }
+  .item { margin-bottom: 2rem; }
+  .item:last-of-type { margin-bottom: 0; }
 
-  .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .row h3 { font-size: 1.05rem; margin: 0; }
-  .row h3 a { text-decoration: none; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 1rem; flex-wrap: wrap; }
+  .row h3 { font-size: 1.0625rem; font-weight: 600; margin: 0; }
+  .row h3 a { color: var(--ink); text-decoration: none; }
   .row h3 a:hover { color: var(--accent); }
+  .sub { margin: 0.3rem 0 0; font-size: 0.875rem; color: var(--ink-faint); max-width: 56ch; }
+  .when { font-size: 0.75rem; color: var(--ink-faint); white-space: nowrap; }
 
-  .sub { margin: 0.2rem 0 0; font-size: 0.875rem; color: var(--muted); max-width: 58ch; }
-  .when { font-size: 0.6875rem; color: var(--muted); white-space: nowrap; }
+  .bul { margin: 0.8rem 0 0; padding-left: 1.15rem; }
+  .bul li { font-size: 0.875rem; line-height: 1.7; margin-bottom: 0.3rem; color: var(--ink-soft); }
+  .bul strong { color: var(--accent); font-weight: 600; }
 
-  .bul { margin: 0.6rem 0 0; padding-left: 1.1rem; }
-  .bul li { font-size: 0.875rem; line-height: 1.6; margin-bottom: 0.25rem; }
+  .stackline { margin: 0.7rem 0 0; font-size: 0.6875rem; color: var(--ink-faint); }
 
-  .stackline { margin: 0.5rem 0 0; font-size: 0.6875rem; color: var(--muted); }
+  .skills { margin: 0; display: grid; gap: 1.1rem; }
+  .skills dt { font-size: 0.6875rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-faint); }
+  .skills dd { margin: 0.35rem 0 0; font-size: 0.875rem; line-height: 1.7; color: var(--ink-soft); }
 
-  .skills { margin: 0; display: grid; gap: 0.9rem; }
-  .skills dd { margin: 0.25rem 0 0; font-size: 0.875rem; line-height: 1.6; }
-
-  .inline { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; padding: 0; margin: 0; font-size: 0.875rem; }
+  .inline { list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem 1.75rem; padding: 0; margin: 0; font-size: 0.875rem; color: var(--ink-soft); }
 </style>

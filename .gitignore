@@ -7,11 +7,15 @@ dist/
 .DS_Store
 npm-debug.log*
 
-# Raw result folders and source video stay local: 171 MB and 56 MB.
+# Raw result folders and source video stay local: 227 MB between them.
 # The site ships the copied figures in public/media/research/ instead.
 results(Grokking)/
 results(surrogat trust audit)/
 vid/
 
+# Vercel link and env files
 .vercel
 .env*
+
+# Local screenshot checks
+site-check/

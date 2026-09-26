@@ -5,12 +5,12 @@
 export const profile = {
   name: 'Sankalp Singh',
   shortName: 'S',
-  identityLine:
-    'I build simulations at the edge of machine learning and mathematical modelling, then try hard to prove them wrong.',
+  // The opening line of the resume PROFILE, which is the reference for what is public.
+  identityLine: 'I build simulations, then test whether their results hold up.',
   /** The PROFILE paragraph from the resume PDF, word for word. */
   resumeProfile:
     'I build simulations and then test whether their results hold up. Most of my work sits between machine learning and mathematical modelling: tracking a drone without GPS, simulating robots on Mars, and asking when a neural network’s answer can be trusted. I have written two research preprints, and one of them reports a negative result. I am applying for an M.Sc. in computational science or computer science, starting 2027.',
-  role: 'Simulation, estimation and machine learning',
+  role: 'Simulation, estimation, machine learning and AI engineering',
   degree:
     'B.Tech, Artificial Intelligence and Data Science, GGSIPU Delhi. Awarded May 2026 (provisional certificate). First two years were mathematics and physics.',
   degreeShort: 'B.Tech, AI and Data Science, GGSIPU Delhi. Awarded May 2026 (provisional certificate).',

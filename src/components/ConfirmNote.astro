@@ -1,0 +1,35 @@
+---
+interface Props {
+  items: readonly string[] | string[];
+}
+const { items } = Astro.props;
+---
+
+{items.length > 0 && (
+  <aside class="todo" role="note">
+    <span class="badge badge-todo">TODO: confirm</span>
+    <ul>
+      {items.map((i) => <li>{i}</li>)}
+    </ul>
+  </aside>
+)}
+
+<style>
+  .todo {
+    display: flex;
+    gap: 0.9rem;
+    align-items: flex-start;
+    border: 1px dashed var(--accent);
+    background: var(--accent-wash);
+    border-radius: 1rem;
+    padding: 1rem 1.2rem;
+    margin: 2rem 0;
+  }
+
+  ul { margin: 0; padding-left: 1.1rem; }
+  li { font-size: 0.875rem; color: var(--ink); line-height: 1.55; }
+
+  @media (max-width: 560px) {
+    .todo { flex-direction: column; gap: 0.6rem; }
+  }
+</style>

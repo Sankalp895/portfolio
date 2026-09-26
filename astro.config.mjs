@@ -10,7 +10,6 @@ export default defineConfig({
   integrations: [react(), mdx(), sitemap()],
   vite: {
     plugins: [tailwindcss()],
-    build: { cssMinify: 'lightningcss' },
   },
   prefetch: { prefetchAll: true, defaultStrategy: 'viewport' },
 });

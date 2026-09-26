@@ -1,41 +1,40 @@
 ---
 import { getCollection } from 'astro:content';
-import Base from '@/layouts/Base.astro';
-import MissionCard from '@/components/cards/MissionCard.astro';
+import Layout from '@/layouts/Layout.astro';
+import MissionCard from '@/components/MissionCard.astro';
 
 const missions = (await getCollection('missions')).sort((a, b) => a.data.order - b.data.order);
 const categories = ['All', 'Robotics', 'Simulation', 'Research', 'ML', 'Backend', 'Security'];
 const counts = Object.fromEntries(
-  categories.map((c) => [c, c === 'All' ? missions.length : missions.filter((m) => m.data.categories.includes(c as never)).length])
+  categories.map((c) => [
+    c,
+    c === 'All' ? missions.length : missions.filter((m) => m.data.categories.includes(c as never)).length,
+  ])
 );
 ---
 
-<Base
+<Layout
   title="Missions"
-  description="Every project: a Mars scout drone, an adversarial swarm defence sim, an AI compliance platform, a GPS-denied estimator, a regex analyser and more."
+  description="Every project: a Mars scout drone, an adversarial swarm defence sim, a zero-dependency PDF typesetter, a GPS-denied estimator and more."
 >
   <section class="shell head">
-    <p class="label">Missions</p>
+    <p class="eyebrow">Missions</p>
     <h1>{missions.length} projects, and the number in each one I stopped trusting.</h1>
-    <p class="lede">
-      Every card carries a headline result on the front. Press <span class="mono">Second metric</span> to
-      turn it over and see what that result was hiding, or what I had to check before I believed it.
-    </p>
+    <p class="lede">Simulation, estimation and machine learning, across {missions.length} projects.</p>
   </section>
 
   <section class="shell">
     <div class="filters" role="group" aria-label="Filter projects by area">
       {categories.map((c) => (
         <button type="button" class:list={['chip', { on: c === 'All' }]} data-filter={c}>
-          {c}
-          <span class="count tabular">{counts[c]}</span>
+          {c}<span class="count mono">{counts[c]}</span>
         </button>
       ))}
     </div>
 
-    <div class="grid" id="mission-grid">
+    <div class="grid" id="grid">
       {missions.map((m) => (
-        <div class="cell" data-cats={m.data.categories.join(',')}>
+        <div class="cell reveal" data-cats={m.data.categories.join(',')}>
           <MissionCard entry={m} />
         </div>
       ))}
@@ -43,74 +42,58 @@ const counts = Object.fromEntries(
 
     <p class="empty" id="empty" hidden>Nothing in that area yet.</p>
   </section>
-</Base>
+</Layout>
 
 <style>
-  .head { padding-top: clamp(2rem, 5vw, 3.5rem); margin-bottom: 2.5rem; }
+  .head { padding-top: 8rem; margin-bottom: 3rem; }
 
   h1 {
-    font-size: clamp(1.9rem, 4vw, 2.8rem);
-    margin: 0.75rem 0 0.9rem;
-    max-width: 20ch;
+    font-size: clamp(2.25rem, 6vw, 4rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    margin: 0.6rem 0 1.25rem;
+    max-width: 18ch;
   }
 
-  .lede {
-    margin: 0;
-    max-width: 58ch;
-    color: var(--muted);
-    font-size: 1.0625rem;
-    line-height: 1.6;
-  }
+  .lede { margin: 0; max-width: 56ch; color: var(--ink-soft); font-size: 1.0625rem; line-height: 1.6; }
 
   .filters {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    padding-bottom: 1.5rem;
-    margin-bottom: 1.5rem;
-    border-bottom: var(--rule);
+    padding-bottom: 2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--hairline);
   }
 
   .chip {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.75rem;
-    padding: 0.4rem 0.75rem;
-    border: var(--rule);
-    border-radius: var(--radius);
-    background: var(--panel);
-    color: var(--muted);
+    font-size: 0.875rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink-soft);
     cursor: pointer;
-    transition: color 0.16s ease, border-color 0.16s ease;
+    transition: color 0.2s ease, border-color 0.2s ease, background 0.2s ease;
   }
 
   .chip:hover { color: var(--ink); }
+  .chip.on { color: #fff; background: var(--ink); border-color: var(--ink); }
 
-  .chip.on {
-    color: var(--accent);
-    border-color: var(--accent);
-    background: var(--accent-soft);
-  }
+  .count { font-size: 0.6875rem; opacity: 0.6; }
 
-  .count { font-size: 0.625rem; opacity: 0.7; }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 1.25rem;
-  }
-
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr)); gap: 1.25rem; }
   .cell[hidden] { display: none; }
-
-  .empty { color: var(--muted); font-size: 0.9375rem; padding: 2rem 0; }
+  .empty { color: var(--ink-faint); padding: 3rem 0; }
 </style>
 
 <script is:inline>
   (function () {
     var chips = document.querySelectorAll('[data-filter]');
-    var cells = document.querySelectorAll('#mission-grid .cell');
+    var cells = document.querySelectorAll('#grid .cell');
     var empty = document.getElementById('empty');
 
     chips.forEach(function (chip) {

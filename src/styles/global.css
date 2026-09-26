@@ -1,307 +1,331 @@
 @import 'tailwindcss';
-@import './tokens.css';
+
+/*
+  The template's Apple palette, kept so its own classes still work, plus a dark
+  mode and one cool accent. Ice blue replaces the template's system blue.
+  Nothing warm anywhere: no rust, no orange, no cream.
+*/
+
+/*
+  A fallback sized to match Inter, so the moment the webfont arrives nothing moves.
+  The shift this removes was the largest on the site: whole text blocks, not media.
+  Values follow the standard Inter-on-Arial metric overrides.
+*/
+@font-face {
+  font-family: 'Inter Fallback';
+  src: local('Arial');
+  size-adjust: 107.12%;
+  ascent-override: 90.44%;
+  descent-override: 22.56%;
+  line-gap-override: 0%;
+}
+
+@theme {
+  --color-apple-gray-50: #f5f5f7;
+  --color-apple-gray-100: #e8e8ed;
+  --color-apple-gray-200: #d2d2d7;
+  --color-apple-gray-300: #86868b;
+  --color-apple-gray-400: #6e6e73;
+  --color-apple-gray-500: #1d1d1f;
+
+  --color-ice-100: #e0f4fe;
+  --color-ice-200: #bae6fd;
+  --color-ice-300: #7dd3fc;
+  --color-ice-400: #38bdf8;
+  --color-ice-500: #0ea5e9;
+  --color-ice-600: #0284c7;
+
+  --font-sans: 'Inter Variable', 'Inter Fallback', system-ui, -apple-system, sans-serif;
+  --font-mono: 'SF Mono', 'JetBrains Mono', ui-monospace, 'Cascadia Mono', menlo, monospace;
+}
+
+/*
+  Surface tokens. Every component reads these rather than a literal colour, so
+  dark mode is one block rather than a `dark:` variant on every element.
+*/
+:root {
+  /* Type scale. Small steps stay small, large steps grow fast with the viewport. */
+  --step--2: 0.6875rem;
+  --step--1: 0.8125rem;
+  --step-0: 0.9375rem;
+  --step-1: clamp(1.0625rem, 0.4vw + 0.95rem, 1.25rem);
+  --step-2: clamp(1.35rem, 1vw + 1.1rem, 1.75rem);
+  --step-3: clamp(1.75rem, 2vw + 1.2rem, 2.5rem);
+  --step-4: clamp(2.25rem, 3.4vw + 1.2rem, 3.5rem);
+  --step-5: clamp(2.75rem, 5.5vw + 1rem, 5rem);
+  --step-6: clamp(3.25rem, 8vw + 0.75rem, 7rem);
+
+  --bg: #f5f5f7;
+  --surface: rgba(255, 255, 255, 0.8);
+  --surface-solid: #ffffff;
+  --ink: #1d1d1f;
+  --ink-soft: #6e6e73;
+  --ink-faint: #86868b;
+  --hairline: rgba(0, 0, 0, 0.08);
+  --accent: #0284c7;
+  --accent-bright: #7dd3fc;
+  --accent-wash: rgba(125, 211, 252, 0.16);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.04), 0 8px 24px -12px rgba(0, 0, 0, 0.12);
+  --dot: rgba(0, 0, 0, 0.07);
+  --dot-strong: rgba(0, 0, 0, 0.13);
+  /* Display blue, used for the name. Dark navy on light, pale on dark. */
+  --display: #10243f;
+  /* Names the research figures draw with, mapped onto the palette above. */
+  --muted: #6e6e73;
+  --grid: rgba(0, 0, 0, 0.08);
+  --font-ui: var(--font-sans);
+  --verified: #1a7f37;
+  --warn: #d70015;
+  --panel: var(--surface-solid);
+  --rule: var(--hairline);
+  --radius: 1.25rem;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #000000;
+  --surface: rgba(28, 28, 30, 0.72);
+  --surface-solid: #1c1c1e;
+  --ink: #f5f5f7;
+  --ink-soft: #a1a1a6;
+  --ink-faint: #86868b;
+  --hairline: rgba(255, 255, 255, 0.1);
+  --accent: #7dd3fc;
+  --accent-bright: #bae6fd;
+  --accent-wash: rgba(125, 211, 252, 0.12);
+  --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.5), 0 12px 32px -14px rgba(0, 0, 0, 0.8);
+  --dot: rgba(255, 255, 255, 0.07);
+  --dot-strong: rgba(255, 255, 255, 0.16);
+  --display: #cde5fa;
+  --muted: #a1a1a6;
+  --grid: rgba(255, 255, 255, 0.12);
+  --font-ui: var(--font-sans);
+  --verified: #30d158;
+  --warn: #ff6961;
+  --panel: var(--surface-solid);
+  --rule: var(--hairline);
+  --radius: 1.25rem;
+  color-scheme: dark;
+}
 
 @layer base {
-  *,
-  *::before,
-  *::after {
-    box-sizing: border-box;
-  }
-
   html {
+    font-family: var(--font-sans);
     scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    /* Reserve the scrollbar always. Without this its arrival narrows the page and
+       reflows everything, including the fixed nav, which reads as layout shift. */
+    scrollbar-gutter: stable;
   }
 
   body {
     margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    overscroll-behavior: none;
     background: var(--bg);
     color: var(--ink);
-    font-family: var(--font-ui);
-    font-size: 16px;
-    line-height: 1.6;
-    font-feature-settings: 'tnum' 1, 'cv05' 1;
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+    transition: background 0.4s ease, color 0.4s ease;
+  }
+
+  /* Dot grid and a faint accent wash, so the page is not flat white. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: radial-gradient(circle at 1px 1px, var(--dot) 1px, transparent 0);
+    background-size: 26px 26px;
+    -webkit-mask-image: radial-gradient(ellipse 90% 55% at 50% 0%, #000 5%, transparent 72%);
+    mask-image: radial-gradient(ellipse 90% 55% at 50% 0%, #000 5%, transparent 72%);
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0 0 auto 0;
+    height: 60vh;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(ellipse 60% 100% at 50% 0%, var(--accent-wash), transparent 70%);
   }
 
   h1, h2, h3, h4 {
-    font-family: var(--font-serif);
-    font-weight: 500;
-    line-height: 1.15;
-    letter-spacing: -0.015em;
-    margin: 0;
+    letter-spacing: -0.025em;
     text-wrap: balance;
+    margin: 0;
   }
 
   p { text-wrap: pretty; }
 
-  a {
-    color: inherit;
-    text-decoration-color: color-mix(in srgb, var(--accent) 55%, transparent);
-    text-underline-offset: 3px;
-  }
-
-  a:hover { text-decoration-color: var(--accent); }
-
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
-    border-radius: 2px;
+    border-radius: 6px;
   }
 
   ::selection {
-    background: var(--accent);
-    color: var(--bg);
+    background: var(--accent-wash);
+    color: var(--ink);
   }
 
-  /* Telemetry numbers must not jump as they tick. */
-  .tabular { font-variant-numeric: tabular-nums; }
-
   img, canvas, svg { display: block; max-width: 100%; }
-
-  hr { border: 0; border-top: var(--rule); margin: 2.5rem 0; }
 }
 
 @layer components {
+  /* The template's widget card, moved onto tokens so it works in both themes. */
+  .widget {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--hairline);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow-card);
+  }
+
   .shell {
     width: 100%;
-    max-width: 1200px;
+    max-width: 72rem;
     margin-inline: auto;
-    padding-inline: clamp(1rem, 4vw, 2.5rem);
+    padding-inline: 1.5rem;
   }
 
-  .shell-narrow {
+  .shell-read {
     width: 100%;
-    max-width: 820px;
+    max-width: 44rem;
     margin-inline: auto;
-    padding-inline: clamp(1rem, 4vw, 2.5rem);
+    padding-inline: 1.5rem;
   }
 
-  .panel {
-    background: var(--panel);
-    border: var(--rule);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-  }
-
-  .label {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .mono { font-family: var(--font-mono); }
-
-  .metric {
-    font-family: var(--font-mono);
-    font-variant-numeric: tabular-nums;
-    color: var(--accent);
-  }
-
-  /* Faint HUD grid behind hero and section headers. */
-  .gridlines {
-    background-image:
-      linear-gradient(to right, var(--grid) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-    background-size: 64px 64px;
-    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 10%, transparent 75%);
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 10%, transparent 75%);
-    opacity: 0.5;
-  }
-
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0.25em 0.6em;
-    border-radius: 2px;
-    border: 1px solid currentColor;
-    white-space: nowrap;
-  }
-
-  .badge-verified { color: var(--verified); background: var(--verified-soft); }
-  .badge-review { color: var(--warn); background: var(--warn-soft); }
-  .badge-planned { color: var(--muted); background: transparent; }
-  .badge-accent { color: var(--accent); background: var(--accent-soft); }
-
-  .prose-paper {
-    max-width: var(--measure);
-    font-family: var(--font-serif);
-    font-size: 1.0625rem;
-    line-height: 1.7;
-  }
-
-  .prose-paper h2 {
-    font-size: clamp(1.35rem, 3vw, 1.75rem);
-    margin-top: 2.75rem;
-    margin-bottom: 0.75rem;
-    padding-top: 1.25rem;
-    border-top: var(--rule);
-  }
-
-  .prose-paper h3 {
-    font-size: 1.15rem;
-    margin-top: 1.75rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .prose-paper p { margin: 0 0 1.1rem; }
-  .prose-paper ul, .prose-paper ol { margin: 0 0 1.1rem; padding-left: 1.3rem; }
-  .prose-paper li { margin-bottom: 0.4rem; }
-  .prose-paper a { color: var(--accent); }
-  .prose-paper strong { font-weight: 600; }
-
-  .prose-paper code {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    background: var(--panel-raised);
-    border: var(--rule);
-    border-radius: 2px;
-    padding: 0.1em 0.35em;
-  }
-
-  .prose-paper pre {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    background: var(--panel-raised);
-    border: var(--rule);
-    border-radius: var(--radius);
-    padding: 1rem;
-    overflow-x: auto;
-  }
-
-  .prose-paper pre code { background: none; border: 0; padding: 0; }
-
-  .prose-paper blockquote {
-    margin: 0 0 1.1rem;
-    padding-left: 1rem;
-    border-left: 2px solid var(--accent);
-    color: var(--muted);
-  }
-
-  .prose-paper table {
-    width: 100%;
-    border-collapse: collapse;
-    font-family: var(--font-ui);
-    font-size: 0.9rem;
-    margin-bottom: 1.4rem;
-  }
-
-  .prose-paper th, .prose-paper td {
-    text-align: left;
-    padding: 0.5rem 0.75rem;
-    border-bottom: var(--rule);
-  }
-
-  .prose-paper th {
-    font-family: var(--font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--muted);
-  }
-
-  .link-arrow {
-    font-family: var(--font-mono);
+  .eyebrow {
     font-size: 0.8125rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
     color: var(--accent);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4em;
   }
 
-  .link-arrow::after {
-    content: '\2192';
-    transition: transform 0.18s ease;
-  }
+  .mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 
-  .link-arrow:hover::after { transform: translateX(3px); }
+  /* Apple-style oversized figure, used for the one key number per page. */
+  .figure-xl {
+    font-size: clamp(3rem, 9vw, 6rem);
+    font-weight: 600;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    background: linear-gradient(180deg, var(--ink) 40%, var(--ink-soft));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
 
   .btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5em;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    border-radius: 999px;
+    font-size: 0.9375rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn:hover { transform: translateY(-1px); }
+
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-ghost { border-color: var(--hairline); color: var(--ink); background: transparent; }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--hairline);
+    white-space: nowrap;
+  }
+
+  .badge-accent { background: var(--accent-wash); color: var(--accent); border-color: transparent; }
+  .badge-todo { background: var(--accent-wash); color: var(--accent); border-color: var(--accent); border-style: dashed; }
+  .badge-quiet { color: var(--ink-faint); }
+
+  /* Long-form case study and paper prose. */
+  .prose-apple { font-size: 1.0625rem; line-height: 1.7; color: var(--ink-soft); }
+  .prose-apple h2 {
+    font-size: clamp(1.5rem, 3vw, 2.25rem);
+    font-weight: 600;
+    color: var(--ink);
+    margin: 3.5rem 0 1rem;
+  }
+  .prose-apple h3 { font-size: 1.25rem; font-weight: 600; color: var(--ink); margin: 2rem 0 0.5rem; }
+  .prose-apple p { margin: 0 0 1.25rem; }
+  .prose-apple ul, .prose-apple ol { margin: 0 0 1.25rem; padding-left: 1.25rem; }
+  .prose-apple li { margin-bottom: 0.5rem; }
+  .prose-apple strong { color: var(--ink); font-weight: 600; }
+  .prose-apple a { color: var(--accent); }
+  .prose-apple code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+    background: var(--accent-wash);
+    border-radius: 5px;
+    padding: 0.15em 0.4em;
+  }
+  .prose-apple pre {
     font-family: var(--font-mono);
     font-size: 0.8125rem;
-    letter-spacing: 0.04em;
-    padding: 0.6rem 1.05rem;
-    border: 1px solid var(--grid);
-    border-radius: var(--radius);
-    background: var(--panel);
-    color: var(--ink);
-    text-decoration: none;
-    cursor: pointer;
-    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease;
+    line-height: 1.6;
+    background: var(--surface-solid);
+    border: 1px solid var(--hairline);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    overflow-x: auto;
+    margin: 0 0 1.5rem;
+    color: var(--ink-soft);
   }
+  .prose-apple pre code { background: none; padding: 0; }
+  .prose-apple table { width: 100%; border-collapse: collapse; font-size: 0.9375rem; margin-bottom: 1.5rem; }
+  .prose-apple th, .prose-apple td { text-align: left; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--hairline); }
+  .prose-apple th { color: var(--ink); font-weight: 600; font-size: 0.8125rem; }
 
-  .btn:hover { border-color: var(--accent); color: var(--accent); }
-
-  .btn-accent {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #fff;
-  }
-
-  .btn-accent:hover {
-    background: color-mix(in srgb, var(--accent) 86%, #000);
-    border-color: color-mix(in srgb, var(--accent) 86%, #000);
-    color: #fff;
-  }
-
-  .section-rule {
-    display: flex;
-    align-items: baseline;
-    gap: 1rem;
-    border-top: var(--rule);
-    padding-top: 0.75rem;
-    margin-bottom: 1.75rem;
-  }
-
-  .skip-link {
-    position: absolute;
-    left: -9999px;
-    top: 0;
-    z-index: 100;
-  }
-
-  .skip-link:focus {
-    left: 1rem;
-    top: 1rem;
-    padding: 0.6rem 1rem;
-    background: var(--accent);
-    color: #fff;
-    border-radius: var(--radius);
-  }
-}
-
-@layer utilities {
-  .reveal {
-    opacity: 0;
-    transform: translateY(14px);
-    transition: opacity 0.55s ease, transform 0.55s ease;
-  }
-
-  .reveal.is-in { opacity: 1; transform: none; }
+  /*
+    Deliberately empty. The reveal animation is decorative, so it must never be
+    able to hide content: the hidden state is applied by JavaScript only, and only
+    once JavaScript has proved it can also remove it again.
+  */
+  .reveal { }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
-
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.001ms !important;
-    animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
 
-  .reveal { opacity: 1; transform: none; }
+/* Page transitions. Kept short so navigation still feels immediate. */
+@view-transition { navigation: auto; }
+
+::view-transition-old(root) {
+  animation: vt-out 0.18s cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: vt-in 0.28s cubic-bezier(0, 0, 0.2, 1) both;
+}
+
+@keyframes vt-out { to { opacity: 0; transform: translateY(-6px); } }
+@keyframes vt-in { from { opacity: 0; transform: translateY(8px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) { animation: none; }
 }

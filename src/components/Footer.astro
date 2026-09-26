@@ -1,0 +1,81 @@
+---
+import { profile } from '@/data/profile';
+import { hasResumePdf } from '@/data/assets';
+
+const deployed = new Date().toISOString().slice(0, 10);
+---
+
+<footer class="foot">
+  <div class="shell">
+    <div class="top">
+      <p class="line">{profile.identityLine}</p>
+      <div class="links">
+        <a href={`mailto:${profile.email}`}>Email</a>
+        <a href={profile.github} target="_blank" rel="noopener">GitHub</a>
+        <a href={profile.linkedin} target="_blank" rel="noopener">LinkedIn</a>
+        {hasResumePdf && <a href={profile.resumePath}>Resume PDF</a>}
+      </div>
+    </div>
+
+    <div class="meta">
+      <span>Last deployed {deployed}</span>
+      <span>
+        Built on the
+        <a href="https://github.com/larry-xue/apple-style-portfolio" target="_blank" rel="noopener">
+          Apple-Style Portfolio
+        </a>
+        template by Yujian (Larry) Xue, MIT licensed.
+      </span>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    border-top: 1px solid var(--hairline);
+    margin-top: 6rem;
+    padding: 3rem 0 2rem;
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .line {
+    margin: 0;
+    font-size: 1.125rem;
+    font-weight: 500;
+    max-width: 34ch;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+
+  .links a {
+    font-size: 0.875rem;
+    color: var(--ink-soft);
+    text-decoration: none;
+  }
+
+  .links a:hover { color: var(--accent); }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--hairline);
+    font-size: 0.75rem;
+    color: var(--ink-faint);
+  }
+
+  .meta a { color: var(--ink-faint); }
+  .meta a:hover { color: var(--accent); }
+</style>

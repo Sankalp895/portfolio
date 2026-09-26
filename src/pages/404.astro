@@ -1,10 +1,10 @@
 ---
-import Base from '@/layouts/Base.astro';
+import Layout from '@/layouts/Layout.astro';
 ---
 
-<Base title="No path found" description="404. The planner checked, and there is genuinely no route to this page.">
-  <section class="shell wrap">
-    <p class="label">Error 404</p>
+<Layout title="No path found" description="404. The planner checked, and there is genuinely no route to this page.">
+  <section class="shell-read wrap">
+    <p class="eyebrow">Error 404</p>
     <h1>No path found.</h1>
     <p class="lede">
       In SkyScout this exact result was once correct. A* returned no path, I assumed the planner was
@@ -14,43 +14,32 @@ import Base from '@/layouts/Base.astro';
     <p class="lede">This time it is simpler. There is no page at that address.</p>
 
     <pre class="term mono">planner: A*
-start:   {Astro.url.pathname}
 goal:    unreachable
 check:   connected components -> goal not in free space
 result:  no path (correct)</pre>
 
     <div class="btns">
-      <a href="/" class="btn btn-accent">Back to the start</a>
-      <a href="/missions/" class="btn">Missions</a>
-      <button type="button" class="btn" data-open-console>Open the console</button>
+      <a href="/" class="btn btn-primary">Back to the start</a>
+      <a href="/missions/" class="btn btn-ghost">Missions</a>
     </div>
   </section>
-</Base>
+</Layout>
 
 <style>
-  .wrap { padding: clamp(3rem, 10vw, 6rem) 0; max-width: 680px; }
-
-  h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 0.75rem 0 1rem; }
-
-  .lede {
-    margin: 0 0 1rem;
-    color: var(--muted);
-    font-size: 1.0625rem;
-    line-height: 1.65;
-  }
-
+  .wrap { padding: 10rem 1.5rem 4rem; }
+  h1 { font-size: clamp(2.5rem, 8vw, 4.5rem); font-weight: 600; letter-spacing: -0.04em; margin: 0.6rem 0 1.5rem; }
+  .lede { margin: 0 0 1.25rem; color: var(--ink-soft); font-size: 1.0625rem; line-height: 1.65; }
   .term {
-    margin: 1.75rem 0;
-    padding: 1rem 1.15rem;
-    background: var(--panel);
-    border: var(--rule);
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: var(--surface-solid);
+    border: 1px solid var(--hairline);
     border-left: 2px solid var(--accent);
-    border-radius: var(--radius);
+    border-radius: 1rem;
     font-size: 0.8125rem;
-    line-height: 1.7;
-    color: var(--muted);
+    line-height: 1.8;
+    color: var(--ink-soft);
     overflow-x: auto;
   }
-
-  .btns { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .btns { display: flex; flex-wrap: wrap; gap: 0.75rem; }
 </style>

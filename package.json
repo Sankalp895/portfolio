@@ -1,28 +1,45 @@
 {
-  "name": "sankalp-portfolio",
+  "name": "apple-style-portfolio",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/larry-xue/apple-style-portfolio"
+  },
+  "author": {
+    "name": "Yujian Xue",
+    "email": "azoux0311@gmail.com"
+  },
+  "license": "MIT",
   "scripts": {
     "dev": "astro dev",
+    "start": "astro dev",
     "build": "astro build",
-    "preview": "astro preview",
-    "check": "astro check"
+    "preview": "astro build && astro preview",
+    "astro": "astro"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.0.1",
     "@astrojs/react": "^6.0.6",
     "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/inter": "^5.0.16",
+    "@fontsource/source-sans-pro": "^5.1.0",
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.3.3",
+    "clsx": "^2.1.1",
     "d3-force": "^3.0.0",
+    "gsap": "^3.15.0",
+    "motion": "^13.4.2",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
+    "tailwind-merge": "^3.7.0",
     "tailwindcss": "^4.3.3",
     "three": "^0.186.0"
   },
   "devDependencies": {
     "@types/d3-force": "^3.0.10",
+    "@types/node": "^26.6.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/three": "^0.186.0",

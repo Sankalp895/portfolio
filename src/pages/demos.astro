@@ -1,0 +1,66 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '@/layouts/Layout.astro';
+import DemoVideo from '@/components/DemoVideo.tsx';
+import { demos } from '@/data/demos';
+
+const missions = await getCollection('missions');
+const missionFor = (slug: string) => missions.find((m) => m.id === slug);
+---
+
+<Layout title="Demos" description="Screen recordings of the simulators running: SkyScout, the adversarial swarm sim and Inertial Ghost.">
+  <section class="shell top">
+    <p class="eyebrow">Demos</p>
+    <h1>The work, running</h1>
+    <p class="lede">{demos.length} recordings. Each one plays on hover, or opens with sound.</p>
+  </section>
+
+  <section class="shell list">
+    {demos.map((d, i) => {
+      const m = missionFor(d.slug);
+      return (
+        <article class="row reveal">
+          <div class="media">
+            <DemoVideo client:visible slug={d.slug} title={d.title} durationLabel={d.durationLabel} />
+          </div>
+          <div class="meta">
+            <span class="idx mono">{String(i + 1).padStart(2, '0')}</span>
+            <h2>{d.title}</h2>
+            <p class="cap">{d.caption}</p>
+            {m && (
+              <>
+                <p class="tag">{m.data.tagline}</p>
+                <a href={`/missions/${d.slug}/`} class="btn btn-ghost">Read the case study</a>
+              </>
+            )}
+            <p class="src mono">Source: {d.source}</p>
+          </div>
+        </article>
+      );
+    })}
+  </section>
+</Layout>
+
+<style>
+  .top { padding-top: 8rem; margin-bottom: 3.5rem; }
+  h1 { font-size: var(--step-5); font-weight: 600; letter-spacing: -0.045em; margin: 0.6rem 0 1.25rem; }
+  .lede { margin: 0; color: var(--ink-soft); font-size: var(--step-1); line-height: 1.6; }
+
+  .list { display: grid; gap: 5rem; }
+
+  .row { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 3rem; align-items: center; }
+  .row:nth-child(even) .media { order: 2; }
+
+  .meta { display: flex; flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+  .idx { font-size: var(--step--2); color: var(--accent); letter-spacing: 0.1em; }
+  .meta h2 { font-size: var(--step-3); font-weight: 600; letter-spacing: -0.035em; }
+  .cap { margin: 0; font-size: var(--step-0); color: var(--ink-soft); line-height: 1.65; }
+  .tag { margin: 0; font-size: var(--step--1); color: var(--ink-faint); line-height: 1.6; }
+  .src { margin: 0.5rem 0 0; font-size: var(--step--2); color: var(--ink-faint); }
+
+  @media (max-width: 900px) {
+    .row { grid-template-columns: 1fr; gap: 1.5rem; }
+    .row:nth-child(even) .media { order: 0; }
+    .list { gap: 3.5rem; }
+  }
+</style>

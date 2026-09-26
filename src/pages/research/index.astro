@@ -1,6 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
-import Base from '@/layouts/Base.astro';
+import Layout from '@/layouts/Layout.astro';
 import { grokkingFigures, surrogateFigures } from '@/data/research/figures';
 
 const papers = (await getCollection('research')).sort((a, b) => a.data.order - b.data.order);
@@ -11,12 +11,12 @@ const figFor = (id: string) =>
     : { dir: 'surrogate-trust-audit', fig: surrogateFigures.nullComparison };
 ---
 
-<Base
+<Layout
   title="Research"
   description="Two preprints: an audit of grokking early-warning signals, and a null-model audit of trust signals for neural PDE surrogates."
 >
-  <section class="shell top">
-    <p class="label">Research</p>
+  <section class="shell-read top">
+    <p class="eyebrow">Research</p>
     <h1>Two preprints</h1>
     <p class="lede">
       One audits early-warning signals for grokking. One audits trust signals for neural PDE
@@ -35,69 +35,74 @@ const figFor = (id: string) =>
           </a>
           <div class="body">
             <div class="row">
-              <span class="badge badge-review">Preprint</span>
-              <span class="label">{p.data.year}</span>
+              <span class="badge badge-accent">Preprint</span>
+              <span class="yr mono">{p.data.year}</span>
             </div>
             <h2><a href={`/research/${p.id}/`}>{p.data.title}</a></h2>
             {p.data.subtitle && <p class="sub">{p.data.subtitle}</p>}
             <p class="one">{p.data.oneLine}</p>
             <ul class="kr">
               {p.data.keyResults.slice(0, 3).map((k) => (
-                <li><span class="kv metric">{k.value}</span><span class="kl">{k.label}</span></li>
+                <li><span class="kv">{k.value}</span><span class="kl">{k.label}</span></li>
               ))}
             </ul>
-            <a href={`/research/${p.id}/`} class="link-arrow">Read the page</a>
+            <a href={`/research/${p.id}/`} class="more">Read the page</a>
           </div>
         </article>
       );
     })}
   </section>
-</Base>
+</Layout>
 
 <style>
-  .top { padding-top: clamp(2rem, 5vw, 3.5rem); margin-bottom: 3rem; }
-  h1 { font-size: clamp(1.9rem, 4vw, 2.8rem); margin: 0.75rem 0 0.9rem; }
-  .lede { margin: 0; max-width: 62ch; color: var(--muted); font-size: 1.0625rem; line-height: 1.6; }
+  .top { padding-top: clamp(2.5rem, 6vw, 4.5rem); margin-bottom: 3.5rem; }
+  h1 { font-size: var(--step-5); letter-spacing: -0.03em; line-height: 1.05; margin: 0.75rem 0 1rem; }
+  .lede { margin: 0; max-width: 56ch; color: var(--ink-soft); font-size: var(--step-1); line-height: 1.5; letter-spacing: -0.01em; }
 
-  .list { display: grid; gap: 3rem; }
+  .list { display: grid; gap: 3.5rem; }
 
   .paper {
     display: grid;
     grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-    gap: 2.5rem;
+    gap: 3rem;
     align-items: center;
-    padding-top: 2.5rem;
-    border-top: var(--rule);
+    padding-top: 3rem;
+    border-top: 1px solid var(--hairline);
   }
 
   .shot {
     display: block;
-    border: var(--rule);
-    border-radius: var(--radius);
+    border-radius: 1.25rem;
     overflow: hidden;
-    background: var(--panel);
+    background: var(--surface-solid);
+    box-shadow: var(--shadow-card);
     line-height: 0;
-    transition: border-color 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
   }
 
-  .shot:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--grid)); }
+  .shot:hover { transform: translateY(-4px); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 20px 44px -18px rgba(0, 0, 0, 0.28); }
   .shot img { width: 100%; height: auto; display: block; }
 
-  .row { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 0.9rem; }
+  .row { display: flex; align-items: center; gap: 0.9rem; margin-bottom: 1rem; }
+  .yr { font-size: 0.75rem; color: var(--ink-faint); }
 
-  h2 { font-size: clamp(1.5rem, 3vw, 2.1rem); margin: 0 0 0.45rem; }
-  h2 a { text-decoration: none; }
+  h2 { font-size: var(--step-3); letter-spacing: -0.025em; line-height: 1.12; margin: 0 0 0.5rem; }
+  h2 a { text-decoration: none; color: inherit; }
   h2 a:hover { color: var(--accent); }
 
-  .sub { margin: 0 0 0.9rem; font-size: 1rem; color: var(--muted); font-family: var(--font-serif); }
-  .one { margin: 0 0 1.25rem; font-size: 0.9375rem; color: var(--muted); line-height: 1.65; }
+  .sub { margin: 0 0 1rem; font-size: 1.0625rem; color: var(--ink-soft); letter-spacing: -0.01em; }
+  .one { margin: 0 0 1.5rem; font-size: 0.9375rem; color: var(--ink-soft); line-height: 1.6; }
 
-  .kr { list-style: none; margin: 0 0 1.25rem; padding: 1rem 0 0; border-top: var(--rule); display: grid; gap: 0.5rem; }
-  .kr li { display: flex; align-items: baseline; gap: 0.9rem; }
-  .kv { font-size: 1rem; min-width: 6.5rem; }
-  .kl { font-size: 0.8125rem; color: var(--muted); line-height: 1.45; }
+  .kr { list-style: none; margin: 0 0 1.5rem; padding: 1.25rem 0 0; border-top: 1px solid var(--hairline); display: grid; gap: 0.6rem; }
+  .kr li { display: flex; align-items: baseline; gap: 1rem; }
+  .kv { font-size: 1.125rem; letter-spacing: -0.02em; color: var(--accent); min-width: 6.5rem; }
+  .kl { font-size: 0.8125rem; color: var(--ink-soft); line-height: 1.45; }
+
+  .more { font-size: 0.9375rem; color: var(--accent); text-decoration: none; }
+  .more::after { content: ' \2192'; }
+  .more:hover { text-decoration: underline; }
 
   @media (max-width: 900px) {
-    .paper { grid-template-columns: 1fr; gap: 1.5rem; }
+    .paper { grid-template-columns: 1fr; gap: 1.75rem; }
   }
 </style>

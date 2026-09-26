@@ -46,10 +46,16 @@ const STYLE = `
   .val { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
 `;
 
+// The SVGs are inlined into the page, where their <style> applies to the whole
+// document. Every class gets an rf- prefix so a figure label can never restyle
+// the page (it once matched the lightbox, which is also .lb).
+const scope = (css) => css.replace(/\.([a-z][a-z-]*)\s*\{/g, '.rf-$1 {');
+const scopeBody = (svg) => svg.replace(/class="([^"]+)"/g, (_, c) => `class="${c.split(' ').map((x) => 'rf-' + x).join(' ')}"`);
+
 const wrap = (w, h, body, title) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${w} ${h}" role="img" aria-label="${esc(title)}">
-<style>${STYLE}</style>
-${body}
+<style>${scope(STYLE)}</style>
+${scopeBody(body)}
 </svg>`;
 
 // ---------------------------------------------------------------- curve
@@ -103,7 +109,10 @@ ${body}
   const W = 940, ROW = 46, P = { l: 210, r: 80, t: 30, b: 46 };
   const H = P.t + signals.length * ROW + P.b;
 
-  const leads = rows.map((r) => Number(r.lead_time)).filter((v) => Number.isFinite(v));
+  // A blank lead_time means the signal never fired. Number('') is 0, so blanks
+  // must become NaN here or they would be drawn as a lead of zero.
+  const lead = (r) => (r.lead_time === '' ? NaN : Number(r.lead_time));
+  const leads = rows.map(lead).filter((v) => Number.isFinite(v));
   const lo = Math.min(0, ...leads), hi = Math.max(...leads);
   const x = (v) => P.l + ((v - lo) / (hi - lo)) * (W - P.l - P.r);
 
@@ -119,7 +128,7 @@ ${body}
   signals.forEach((sig, i) => {
     const cy = P.t + i * ROW + ROW / 2;
     const mine = rows.filter((r) => r.signal === sig);
-    const vals = mine.map((r) => Number(r.lead_time)).filter(Number.isFinite);
+    const vals = mine.map(lead).filter(Number.isFinite);
     b += `<text class="name" x="${P.l - 12}" y="${cy + 4}" text-anchor="end">${esc(sig)}</text>`;
     if (!vals.length) {
       b += `<text class="val" x="${x(0) + 10}" y="${cy + 4}">never fired on any of the 8 seeds</text>`;
@@ -133,7 +142,7 @@ ${body}
     b += `<text class="val" x="${W - P.r + 10}" y="${cy + 4}">${vals.filter((v) => v > 0).length}/8</text>`;
   });
 
-  b += `<text class="note" x="${P.l}" y="${H - P.b + 36}">each dot is one seed; amber dots fired after the jump, not before</text>`;
+  b += `<text class="note" x="${P.l}" y="${H - P.b + 36}">each dot is one seed; red dots fired after the jump, not before</text>`;
 
   writeFileSync(`${OUT}/lead-times.svg`, wrap(W, H, b, 'Lead time per signal across eight seeds'));
   console.log('lead-times.svg', signals.length, 'signals');

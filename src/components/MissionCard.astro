@@ -1,0 +1,228 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { demoFor } from '@/data/demos';
+
+interface Props {
+  entry: CollectionEntry<'missions'>;
+}
+
+const { entry } = Astro.props;
+const d = entry.data;
+const href = `/missions/${entry.id}/`;
+// Projects with a recording get its poster as the card's backdrop.
+const demo = demoFor(entry.id);
+
+const statusLabel: Record<string, string> = {
+  verified: 'Verified result',
+  'under-review': 'Under review',
+  planned: 'Planned',
+  shipped: 'Shipped',
+};
+---
+
+<article class="card widget" data-categories={d.categories.join(',')}>
+  <div class="inner">
+    <div class="face front">
+      {demo && (
+        <div class="shot" aria-hidden="true">
+          <img src={`/media/demos/${entry.id}.jpg`} alt="" width="1280" height="720" loading="lazy" decoding="async" />
+        </div>
+      )}
+      <header>
+        <span class="badge badge-quiet">{statusLabel[d.status]}</span>
+        <span class="period mono">{d.period}</span>
+      </header>
+
+      <h3><a href={href}>{d.title}</a></h3>
+      <p class="tag">{d.tagline}</p>
+
+      <div class="figure">
+        <span class="fv">{d.headline.value}</span>
+        <span class="fl">{d.headline.label}</span>
+      </div>
+
+      <footer>
+        <div class="tags">
+          {d.categories.map((c) => <span class="chip">{c}</span>)}
+        </div>
+        <button type="button" class="flip" data-flip aria-label={`What the first metric hid on ${d.title}`}>
+          Second metric
+        </button>
+      </footer>
+    </div>
+
+    <div class="face back" aria-hidden="true">
+      <span class="backlbl">What the first metric hid</span>
+      <p class="first"><span class="n">1</span>{d.secondMetric.first}</p>
+      <p class="second"><span class="n two">2</span>{d.secondMetric.second}</p>
+      <footer>
+        <a href={href} class="read">Read the case study</a>
+        <button type="button" class="flip" data-flip>Back</button>
+      </footer>
+    </div>
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    perspective: 1600px;
+    min-height: 22rem;
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+  }
+
+  .inner {
+    position: relative;
+    height: 100%;
+    transform-style: preserve-3d;
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .card.flipped .inner { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding: 1.6rem;
+    border-radius: 1.25rem;
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--shadow-card);
+    backface-visibility: hidden;
+    transition: border-color 0.25s ease, transform 0.25s ease;
+  }
+
+  .face:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--hairline)); }
+
+  /* Poster frame as a backdrop, faded so the text stays the point. */
+  .shot { position: absolute; inset: 0; z-index: 0; overflow: hidden; border-radius: inherit; }
+  .shot img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+  .card:hover .shot img { transform: scale(1.06); }
+
+  .shot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--surface-solid) 78%, transparent) 0%, var(--surface-solid) 62%);
+  }
+
+  .front > *:not(.shot) { position: relative; z-index: 1; }
+
+  .back { transform: rotateY(180deg); }
+
+  header { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .period { font-size: 0.6875rem; color: var(--ink-faint); white-space: nowrap; }
+
+  h3 { font-size: 1.4rem; font-weight: 600; }
+  h3 a { color: var(--ink); text-decoration: none; }
+  h3 a::after { content: ''; position: absolute; inset: 0; }
+
+  .tag { margin: 0; font-size: 0.9375rem; color: var(--ink-soft); line-height: 1.5; }
+
+  .figure { margin-top: auto; padding-top: 1rem; display: flex; flex-direction: column; gap: 0.25rem; }
+
+  .fv {
+    font-size: clamp(1.75rem, 3.4vw, 2.4rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: var(--accent);
+  }
+
+  .fl { font-size: 0.75rem; color: var(--ink-faint); line-height: 1.45; }
+
+  footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding-top: 0.9rem;
+    margin-top: 0.6rem;
+    border-top: 1px solid var(--hairline);
+  }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+
+  .chip {
+    font-size: 0.625rem;
+    letter-spacing: 0.03em;
+    color: var(--ink-faint);
+    border: 1px solid var(--hairline);
+    border-radius: 999px;
+    padding: 0.2em 0.6em;
+  }
+
+  .flip {
+    position: relative;
+    z-index: 2;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--accent);
+    background: var(--accent-wash);
+    border: 0;
+    border-radius: 999px;
+    padding: 0.35em 0.85em;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .flip:hover { background: color-mix(in srgb, var(--accent) 22%, transparent); }
+
+  .backlbl { font-size: 0.75rem; font-weight: 600; color: var(--accent); }
+
+  .back .first, .back .second {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    display: flex;
+    gap: 0.65rem;
+  }
+
+  .back .first { color: var(--ink-faint); }
+  .back .second { color: var(--ink); }
+
+  .n {
+    flex-shrink: 0;
+    width: 1.4rem;
+    height: 1.4rem;
+    display: grid;
+    place-items: center;
+    font-size: 0.6875rem;
+    border: 1px solid var(--hairline);
+    border-radius: 50%;
+    color: var(--ink-faint);
+  }
+
+  .n.two { color: var(--accent); border-color: var(--accent); }
+
+  .read { font-size: 0.8125rem; color: var(--accent); text-decoration: none; }
+  .back footer { margin-top: auto; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .inner { transition: none; }
+  }
+</style>
+
+<script is:inline>
+  (function () {
+    document.querySelectorAll('[data-flip]').forEach(function (btn) {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var card = btn.closest('.card');
+        if (!card) return;
+        var flipped = card.classList.toggle('flipped');
+        var back = card.querySelector('.back');
+        var front = card.querySelector('.front');
+        if (back) back.setAttribute('aria-hidden', String(!flipped));
+        if (front) front.setAttribute('aria-hidden', String(flipped));
+      });
+    });
+  })();
+</script>

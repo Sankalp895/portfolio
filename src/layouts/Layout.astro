@@ -1,0 +1,129 @@
+---
+import '@fontsource-variable/inter';
+import '@/styles/global.css';
+import Nav from '@/components/Nav.astro';
+import Footer from '@/components/Footer.astro';
+import { profile } from '@/data/profile';
+import { ClientRouter } from 'astro:transitions';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Narrow measure for long-form reading pages. */
+  read?: boolean;
+}
+
+const { title, description, read = false } = Astro.props;
+const fullTitle = title === 'home' ? `${profile.name}: ${profile.role}` : `${title} / ${profile.name}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <ClientRouter />
+    <meta name="generator" content={Astro.generator} />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='9' fill='%237DD3FC'/%3E%3C/svg%3E"
+    />
+
+    <script is:inline>
+      // Set before paint so the theme never flashes.
+      (function () {
+        try {
+          var t = localStorage.getItem('theme');
+          if (t !== 'dark' && t !== 'light') {
+            t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          document.documentElement.dataset.theme = t;
+        } catch (e) {
+          document.documentElement.dataset.theme = 'light';
+        }
+      })();
+    </script>
+  </head>
+
+  <body>
+    <a href="#main" class="skip">Skip to content</a>
+    <Nav />
+    <main id="main" class={read ? 'pt-24' : ''}>
+      <slot />
+    </main>
+    <Footer />
+
+    <script>
+      import { gsap } from 'gsap';
+
+      /*
+        GSAP animates; an IntersectionObserver decides when. Two rules matter more
+        than the effect itself:
+          1. The stylesheet never hides anything, so no JavaScript means no blank page.
+          2. Whatever is still hidden after 4 seconds is shown regardless, so a missed
+             observer callback can never cost a reader the content.
+      */
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const targets = gsap.utils.toArray<HTMLElement>('.reveal');
+
+      if (!reduced && 'IntersectionObserver' in window && targets.length) {
+        gsap.set(targets, { opacity: 0, y: 28 });
+
+        const show = (el: HTMLElement) =>
+          gsap.to(el, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', overwrite: 'auto' });
+
+        const io = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((e) => {
+              if (!e.isIntersecting) return;
+              io.unobserve(e.target);
+              show(e.target as HTMLElement);
+            });
+          },
+          { rootMargin: '0px 0px -5% 0px', threshold: 0.01 }
+        );
+
+        targets.forEach((el) => io.observe(el));
+
+        window.setTimeout(() => {
+          targets.forEach((el) => {
+            if (parseFloat(getComputedStyle(el).opacity) < 1) {
+              io.unobserve(el);
+              show(el);
+            }
+          });
+        }, 4000);
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+  }
+
+  .skip:focus {
+    left: 1rem;
+    top: 1rem;
+    padding: 0.7rem 1.2rem;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 999px;
+  }
+</style>
