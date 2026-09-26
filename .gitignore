@@ -12,3 +12,6 @@ npm-debug.log*
 results(Grokking)/
 results(surrogat trust audit)/
 vid/
+
+.vercel
+.env*
