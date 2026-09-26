@@ -1,0 +1,373 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import MarsHero from '@/components/hero/MarsHero.tsx';
+import MissionCard from '@/components/cards/MissionCard.astro';
+import SectionHead from '@/components/hud/SectionHead.astro';
+import { profile } from '@/data/profile';
+import { grokkingFigures, surrogateFigures } from '@/data/research/figures';
+
+const missions = (await getCollection('missions')).sort((a, b) => a.data.order - b.data.order);
+const flagship = missions.filter((m) => m.data.flagship);
+const papers = (await getCollection('research')).sort((a, b) => a.data.order - b.data.order);
+const log = (await getCollection('rigor-log')).sort((a, b) => a.data.order - b.data.order);
+
+const ticker = [...log, ...log];
+
+// The strongest figure from each paper, for the research tiles.
+const paperFig = (id: string) =>
+  id === 'lead-time-is-not-a-detection'
+    ? { dir: 'grokking', fig: grokkingFigures.curve }
+    : { dir: 'surrogate-trust-audit', fig: surrogateFigures.nullComparison };
+
+const statusMap: Record<string, string> = {
+  'under-review': 'Under review',
+  preprint: 'Preprint',
+  published: 'Published',
+  'in-preparation': 'In preparation',
+};
+---
+
+<Base
+  title="home"
+  description="Sankalp Singh builds simulations at the edge of machine learning and mathematical modelling: a Mars scout drone, an adversarial drone-swarm defence sim, and two papers about measuring honestly."
+>
+  <section class="hero shell">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <p class="label eyebrow">Sankalp Singh / Delhi, IN</p>
+        <h1>
+          I build simulations at the edge of machine learning and mathematical modelling,
+          <span class="accent"> then try hard to prove them wrong.</span>
+        </h1>
+        <p class="sub">
+          Most of my best work is a number I stopped trusting. This site is organised around that:
+          every project shows the result, and the second, independent metric that told me the first one
+          was lying.
+        </p>
+
+        <div class="cta">
+          <a href="/missions/" class="btn btn-accent">See the missions</a>
+          <a href="/rigor-log/" class="btn">Read the Rigor Log</a>
+        </div>
+
+        <dl class="facts">
+          <div>
+            <dt class="label">Degree</dt>
+            <dd>B.Tech, AI and Data Science, GGSIPU Delhi. Awarded May 2026.</dd>
+          </div>
+          <div>
+            <dt class="label">Next</dt>
+            <dd>M.Sc. 2027. Computational Science, Scientific Computing, CS or Robotics.</dd>
+          </div>
+        </dl>
+      </div>
+
+      <div class="hero-stage">
+        <MarsHero client:visible />
+        <p class="illus label">
+          Illustration of the SkyScout survey, drawn live in your browser from seed 20260808.
+          It is not simulator output.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell block reveal">
+    <SectionHead
+      index="01"
+      title="The second metric"
+      note="One number can be right for the wrong reason. Every project below is paired with the check that would have caught it."
+    />
+    <div class="three">
+      <div class="idea">
+        <span class="n mono">01</span>
+        <h3>A metric can pass while the system is broken</h3>
+        <p>
+          A clearance check on the SkyScout hinges passed nine design changes in a row. A solid overlap
+          test found the parts had been interfering the whole time.
+        </p>
+      </div>
+      <div class="idea">
+        <span class="n mono">02</span>
+        <h3>A lead time is not a detection</h3>
+        <p>
+          Fix the rule before you look at the results, or you will find an early warning in any curve.
+          Under a strict rule, one grokking signal led on 8 of 8 seeds and a popular one on 0 of 8.
+        </p>
+      </div>
+      <div class="idea">
+        <span class="n mono">03</span>
+        <h3>Register the dumb baseline first</h3>
+        <p>
+          In surrogate-trust-audit, an input-only null model registered before the results beat every
+          trust signal I tested. I reported it that way.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="shell block reveal">
+    <SectionHead
+      index="02"
+      title="Flagship missions"
+      note="Flip a card to see what the headline number hid."
+      href="/missions/"
+      hrefLabel="All projects"
+    />
+    <div class="cards">
+      {flagship.map((m) => <MissionCard entry={m} featured />)}
+    </div>
+  </section>
+
+  <section class="shell block reveal">
+    <SectionHead index="03" title="Papers" href="/research/" hrefLabel="Read both" />
+    <div class="papers">
+      {papers.map((p) => {
+        const { dir, fig } = paperFig(p.id);
+        return (
+          <article class="paper panel">
+            <a href={`/research/${p.id}/`} class="pshot" aria-hidden="true" tabindex="-1">
+              <img src={`/media/research/${dir}/${fig.name}.webp`} alt="" width={fig.w} height={fig.h} loading="lazy" decoding="async" />
+            </a>
+            <div class="pbody">
+              <header>
+                <span class="badge badge-review">{statusMap[p.data.status]}</span>
+                <span class="label">{p.data.year}</span>
+              </header>
+              <h3><a href={`/research/${p.id}/`}>{p.data.title}</a></h3>
+              <p class="abs">{p.data.oneLine}</p>
+              <ul class="kr">
+                {p.data.keyResults.slice(0, 3).map((k) => (
+                  <li>
+                    <span class="metric">{k.value}</span>
+                    <span>{k.label}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+
+  <section class="block ticker-block reveal">
+    <div class="shell">
+      <SectionHead
+        index="04"
+        title="Rigor Log"
+        note={`${log.length} times a second metric disagreed with the first one, and what I did about it.`}
+        href="/rigor-log/"
+        hrefLabel={`Read all ${log.length}`}
+      />
+    </div>
+    <div class="ticker" aria-hidden="true">
+      <div class="track">
+        {ticker.map((e) => (
+          <a href="/rigor-log/" class="tick-item">
+            <span class="tick-proj mono">{e.data.project}</span>
+            <span class="tick-title">{e.data.title}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="shell block reveal">
+    <div class="contact panel">
+      <div>
+        <h2>Open to an M.Sc. place for 2027, and to internships before it.</h2>
+        <p>
+          If you supervise work in estimation, simulation or the measurement side of machine learning,
+          I would like to hear from you. Everything on this site links back to the code or the paper.
+        </p>
+      </div>
+      <div class="contact-links">
+        <a href={`mailto:${profile.email}`} class="btn btn-accent">{profile.email}</a>
+        <a href={profile.github} target="_blank" rel="noopener" class="btn">GitHub</a>
+        <a href={profile.linkedin} target="_blank" rel="noopener" class="btn">LinkedIn</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { padding-top: clamp(2rem, 5vw, 3.5rem); }
+
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    gap: clamp(1.5rem, 4vw, 3rem);
+    align-items: center;
+  }
+
+  .eyebrow { display: block; margin-bottom: 0.9rem; }
+
+  h1 {
+    font-size: clamp(2rem, 4.4vw, 3.15rem);
+    line-height: 1.08;
+    margin: 0 0 1.1rem;
+    max-width: 18ch;
+  }
+
+  .accent { color: var(--accent); }
+
+  .sub {
+    margin: 0;
+    max-width: 48ch;
+    color: var(--muted);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  .cta { display: flex; flex-wrap: wrap; gap: 0.6rem; margin: 1.6rem 0 1.8rem; }
+
+  .facts {
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+    padding-top: 1.3rem;
+    border-top: var(--rule);
+  }
+
+  .facts dd { margin: 0.25rem 0 0; font-size: 0.875rem; line-height: 1.5; }
+
+  .illus {
+    margin: 0.65rem 0 0;
+    line-height: 1.5;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.6875rem;
+  }
+
+  .block { margin-top: clamp(3.5rem, 8vw, 6rem); }
+
+  .three {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(1rem, 2.5vw, 2rem);
+  }
+
+  .idea { border-top: 2px solid var(--accent); padding-top: 0.9rem; }
+
+  .idea .n { font-size: 0.6875rem; color: var(--accent); letter-spacing: 0.14em; }
+
+  .idea h3 {
+    font-size: 1.15rem;
+    margin: 0.45rem 0 0.5rem;
+  }
+
+  .idea p { margin: 0; font-size: 0.9375rem; color: var(--muted); line-height: 1.6; }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .papers {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .paper { padding: 0; display: flex; flex-direction: column; overflow: hidden; }
+
+  .pshot { display: block; line-height: 0; border-bottom: var(--rule); background: var(--panel-raised); }
+  .pshot img { width: 100%; height: auto; display: block; }
+
+  .pbody { padding: 1.4rem; display: flex; flex-direction: column; gap: 0.75rem; flex: 1; }
+
+  .paper header { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+
+  .paper h3 { font-size: 1.35rem; margin: 0; }
+  .paper h3 a { text-decoration: none; }
+  .paper h3 a:hover { color: var(--accent); }
+
+  .abs {
+    margin: 0;
+    font-size: 0.9375rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .kr {
+    list-style: none;
+    margin: auto 0 0;
+    padding: 0.9rem 0 0;
+    border-top: var(--rule);
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  .kr li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    font-size: 0.8125rem;
+    color: var(--muted);
+  }
+
+  .kr .metric { min-width: 4.5rem; font-size: 0.9375rem; }
+
+  .ticker-block { overflow: hidden; }
+
+  .ticker {
+    border-block: var(--rule);
+    padding: 0.85rem 0;
+    overflow: hidden;
+    mask-image: linear-gradient(to right, transparent, #000 6%, #000 94%, transparent);
+  }
+
+  .track {
+    display: flex;
+    gap: 2.5rem;
+    width: max-content;
+    animation: slide 90s linear infinite;
+  }
+
+  .ticker:hover .track { animation-play-state: paused; }
+
+  .tick-item {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    text-decoration: none;
+    white-space: nowrap;
+    font-size: 0.875rem;
+  }
+
+  .tick-proj { font-size: 0.6875rem; color: var(--accent); letter-spacing: 0.08em; }
+  .tick-title { color: var(--muted); }
+  .tick-item:hover .tick-title { color: var(--ink); }
+
+  @keyframes slide {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  .contact {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.8fr);
+    gap: 2rem;
+    align-items: center;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+  }
+
+  .contact h2 { font-size: clamp(1.35rem, 2.8vw, 1.85rem); margin: 0 0 0.6rem; max-width: 24ch; }
+  .contact p { margin: 0; color: var(--muted); font-size: 0.9375rem; max-width: 52ch; line-height: 1.6; }
+
+  .contact-links { display: flex; flex-direction: column; gap: 0.5rem; align-items: stretch; }
+  .contact-links .btn { justify-content: center; }
+
+  @media (max-width: 1000px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .three { grid-template-columns: 1fr; gap: 1.5rem; }
+    .contact { grid-template-columns: 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .track { animation: none; flex-wrap: wrap; width: 100%; }
+  }
+</style>

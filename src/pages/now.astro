@@ -1,0 +1,106 @@
+---
+import Base from '@/layouts/Base.astro';
+import { now } from '@/data/now';
+import { profile } from '@/data/profile';
+
+const pretty = new Date(now.updated).toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<Base
+  title="Now"
+  description="What Sankalp Singh is working on this month: M.Sc. applications for 2027, two papers, German, cybersecurity and LLM systems engineering."
+  wide={false}
+>
+  <section class="shell top">
+    <p class="label">Now</p>
+    <h1>{now.headline}</h1>
+    <p class="stamp mono">Updated {pretty} / {now.place}</p>
+  </section>
+
+  <section class="shell">
+    <ol class="items">
+      {now.items.map((item) => (
+        <li>
+          <span class="k label">{item.label}</span>
+          <div class="v">
+            <p>{item.body}</p>
+            {'confirm' in item && item.confirm && (
+              <p class="todo">
+                <span class="badge badge-review">TODO: confirm</span>
+                {item.confirm}
+              </p>
+            )}
+          </div>
+        </li>
+      ))}
+    </ol>
+
+    <p class="foot">
+      This page is dated on purpose. If the date above is old, so is everything under it.
+      The fastest way to get a current answer is <a href={`mailto:${profile.email}`}>an email</a>.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .top { padding-top: clamp(2rem, 5vw, 3.5rem); margin-bottom: 2.5rem; }
+
+  h1 {
+    font-size: clamp(1.8rem, 3.8vw, 2.6rem);
+    margin: 0.75rem 0 0.9rem;
+    max-width: 24ch;
+  }
+
+  .stamp { font-size: 0.75rem; color: var(--muted); }
+
+  .items { list-style: none; margin: 0; padding: 0; }
+
+  .items li {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 1.5rem 0;
+    border-top: var(--rule);
+  }
+
+  .items li:last-child { border-bottom: var(--rule); }
+
+  .k { padding-top: 0.25rem; }
+
+  .v p {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    max-width: var(--measure);
+  }
+
+  .todo {
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    margin-top: 0.8rem !important;
+    font-family: var(--font-ui) !important;
+    font-size: 0.8125rem !important;
+    color: var(--muted);
+    line-height: 1.5 !important;
+  }
+
+  .foot {
+    margin-top: 2.5rem;
+    font-size: 0.9375rem;
+    color: var(--muted);
+    max-width: 58ch;
+    line-height: 1.6;
+  }
+
+  .foot a { color: var(--accent); }
+
+  @media (max-width: 700px) {
+    .items li { grid-template-columns: 1fr; gap: 0.5rem; }
+  }
+</style>

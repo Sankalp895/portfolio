@@ -1,0 +1,288 @@
+{
+ "primary": [
+  {
+   "indicator": "residual_supervised",
+   "cls": "residual",
+   "null": "null_best_supervised",
+   "regime": "severe",
+   "nCells": 6.0,
+   "margin": -0.28598622362369663,
+   "ciLow": -0.33305534202393244,
+   "ciHigh": -0.23534240236080478,
+   "p": 0.00019998000199980003,
+   "verdict": "fails: null better"
+  },
+  {
+   "indicator": "ensemble_supervised",
+   "cls": "ensemble",
+   "null": "null_best_supervised",
+   "regime": "severe",
+   "nCells": 6.0,
+   "margin": -0.6938854798116556,
+   "ciLow": -0.8810485570056302,
+   "ciHigh": -0.5411453265187358,
+   "p": 0.00019998000199980003,
+   "verdict": "fails: null better"
+  },
+  {
+   "indicator": "embedding_probe",
+   "cls": "embedding",
+   "null": "null_best_supervised",
+   "regime": "severe",
+   "nCells": 6.0,
+   "margin": -0.07718146460668783,
+   "ciLow": -0.11887885811308585,
+   "ciHigh": -0.042520137977514805,
+   "p": 0.00019998000199980003,
+   "verdict": "fails: null better"
+  }
+ ],
+ "unsupervised": [
+  {
+   "indicator": "residual_raw",
+   "cls": "residual",
+   "null": "null_best",
+   "regime": "severe",
+   "nCells": 6.0,
+   "margin": -0.16786701782761335,
+   "ciLow": -0.24114621278821716,
+   "ciHigh": -0.08970378650574633,
+   "p": 0.00019998000199980003
+  },
+  {
+   "indicator": "ensemble",
+   "cls": "ensemble",
+   "null": "null_best",
+   "regime": "severe",
+   "nCells": 6.0,
+   "margin": -0.9221899092297865,
+   "ciLow": -1.2294070225210603,
+   "ciHigh": -0.6025989777354241,
+   "p": 0.00019998000199980003
+  },
+  {
+   "indicator": "embedding_mahalanobis",
+   "cls": "embedding",
+   "null": "null_best",
+   "regime": "severe",
+   "nCells": 6.0,
+   "margin": -0.622436397239308,
+   "ciLow": -0.7964113689437808,
+   "ciHigh": -0.47149989161385075,
+   "p": 0.00019998000199980003
+  }
+ ],
+ "spearman": [
+  {
+   "family": "supervised",
+   "indicator": "amplitude_quantiles_probe",
+   "nCells": 6,
+   "meanSpearman": 0.2878,
+   "minSpearman": 0.23,
+   "maxSpearman": 0.3408,
+   "isNull": false
+  },
+  {
+   "family": "supervised",
+   "indicator": "autocorrelation_lags_supervised",
+   "nCells": 6,
+   "meanSpearman": 0.9917,
+   "minSpearman": 0.983,
+   "maxSpearman": 0.9985,
+   "isNull": false
+  },
+  {
+   "family": "supervised",
+   "indicator": "embedding_probe",
+   "nCells": 6,
+   "meanSpearman": 0.9145,
+   "minSpearman": 0.8296,
+   "maxSpearman": 0.9713,
+   "isNull": false
+  },
+  {
+   "family": "supervised",
+   "indicator": "ensemble_supervised",
+   "nCells": 6,
+   "meanSpearman": 0.2978,
+   "minSpearman": -0.091,
+   "maxSpearman": 0.4918,
+   "isNull": false
+  },
+  {
+   "family": "supervised",
+   "indicator": "input_features_supervised",
+   "nCells": 6,
+   "meanSpearman": 0.9359,
+   "minSpearman": 0.8626,
+   "maxSpearman": 0.9692,
+   "isNull": false
+  },
+  {
+   "family": "supervised",
+   "indicator": "input_floor_supervised",
+   "nCells": 6,
+   "meanSpearman": 0.5142,
+   "minSpearman": 0.399,
+   "maxSpearman": 0.6023,
+   "isNull": false
+  },
+  {
+   "family": "supervised",
+   "indicator": "null_best_supervised",
+   "nCells": 6,
+   "meanSpearman": 0.9917,
+   "minSpearman": 0.983,
+   "maxSpearman": 0.9985,
+   "isNull": true
+  },
+  {
+   "family": "supervised",
+   "indicator": "random_encoder_probe",
+   "nCells": 6,
+   "meanSpearman": 0.8259,
+   "minSpearman": 0.6603,
+   "maxSpearman": 0.9728,
+   "isNull": false
+  },
+  {
+   "family": "supervised",
+   "indicator": "random_projections_probe",
+   "nCells": 6,
+   "meanSpearman": 0.0246,
+   "minSpearman": -0.019,
+   "maxSpearman": 0.0824,
+   "isNull": false
+  },
+  {
+   "family": "supervised",
+   "indicator": "residual_supervised",
+   "nCells": 6,
+   "meanSpearman": 0.7057,
+   "minSpearman": 0.6255,
+   "maxSpearman": 0.8208,
+   "isNull": false
+  },
+  {
+   "family": "unsupervised",
+   "indicator": "autocorrelation_lags",
+   "nCells": 6,
+   "meanSpearman": 0.8736,
+   "minSpearman": 0.8157,
+   "maxSpearman": 0.9132,
+   "isNull": false
+  },
+  {
+   "family": "unsupervised",
+   "indicator": "embedding_mahalanobis",
+   "nCells": 6,
+   "meanSpearman": 0.2511,
+   "minSpearman": -0.1581,
+   "maxSpearman": 0.4963,
+   "isNull": false
+  },
+  {
+   "family": "unsupervised",
+   "indicator": "ensemble",
+   "nCells": 6,
+   "meanSpearman": -0.0486,
+   "minSpearman": -0.4918,
+   "maxSpearman": 0.4597,
+   "isNull": false
+  },
+  {
+   "family": "unsupervised",
+   "indicator": "input_features",
+   "nCells": 6,
+   "meanSpearman": 0.7516,
+   "minSpearman": 0.6116,
+   "maxSpearman": 0.855,
+   "isNull": false
+  },
+  {
+   "family": "unsupervised",
+   "indicator": "input_floor",
+   "nCells": 6,
+   "meanSpearman": 0.5142,
+   "minSpearman": 0.399,
+   "maxSpearman": 0.6023,
+   "isNull": false
+  },
+  {
+   "family": "unsupervised",
+   "indicator": "null_best",
+   "nCells": 6,
+   "meanSpearman": 0.8736,
+   "minSpearman": 0.8157,
+   "maxSpearman": 0.9132,
+   "isNull": true
+  },
+  {
+   "family": "unsupervised",
+   "indicator": "residual_normalised",
+   "nCells": 6,
+   "meanSpearman": 0.0996,
+   "minSpearman": -0.0088,
+   "maxSpearman": 0.3135,
+   "isNull": false
+  },
+  {
+   "family": "unsupervised",
+   "indicator": "residual_raw",
+   "nCells": 6,
+   "meanSpearman": 0.7057,
+   "minSpearman": 0.6255,
+   "maxSpearman": 0.8208,
+   "isNull": false
+  }
+ ],
+ "solver": [
+  {
+   "solver": "advection / upwind",
+   "expected": 1.0,
+   "observed": 0.9926,
+   "tolerance": 0.15,
+   "passed": true
+  },
+  {
+   "solver": "advection / lax-wendroff",
+   "expected": 2.0,
+   "observed": 1.9998,
+   "tolerance": 0.15,
+   "passed": true
+  },
+  {
+   "solver": "heat / crank-nicolson",
+   "expected": 2.0,
+   "observed": 2.0001,
+   "tolerance": 0.15,
+   "passed": true
+  },
+  {
+   "solver": "burgers / spectral",
+   "expected": 2.0,
+   "observed": 1.9556,
+   "tolerance": 0.15,
+   "passed": true
+  }
+ ],
+ "trainability": [
+  {
+   "architecture": "fno",
+   "n": 15,
+   "meanValOverNoChange": 0.000235,
+   "maxValOverNoChange": 0.001127
+  },
+  {
+   "architecture": "pinn",
+   "n": 15,
+   "meanValOverNoChange": 0.95732,
+   "maxValOverNoChange": 1.016494
+  }
+ ],
+ "setup": {
+  "nTest": 1360,
+  "cells": 36,
+  "codeFingerprint": "f20e2b24a8ca"
+ }
+}

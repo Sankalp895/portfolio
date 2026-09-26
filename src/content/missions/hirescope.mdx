@@ -1,0 +1,55 @@
+---
+title: HireScope
+tagline: A resume analyser that scores a CV the way an applicant tracking system would.
+period: '2025'
+categories: ['ML', 'Backend']
+flagship: false
+order: 8
+status: shipped
+headline:
+  value: '87%'
+  label: 'ATS pass rate'
+secondMetric:
+  first: 'An 87% ATS pass rate means the resumes get through the filter.'
+  second: 'Getting through a keyword filter and being worth an interview are different targets. The score is a parser check, not a judgement of the person.'
+proof:
+  - value: '87%'
+    label: 'ATS pass rate'
+  - value: 'RAG'
+    label: 'Retrieval over the job description, not just keyword counts'
+stack:
+  - FastAPI
+  - React
+  - spaCy
+  - sentence-transformers
+  - FAISS
+  - Redis
+  - RAG
+  - OCR (Tesseract)
+links:
+  - label: 'Live demo'
+    href: 'https://hire-scope-gules.vercel.app/'
+  - label: 'Repository'
+    href: 'https://github.com/Sankalp895/HireScope-AI-Resume-Analyzer'
+confirm: []
+---
+
+## Problem
+
+Most resumes are read by software before a person sees them. An applicant tracking system, an ATS, parses the file and matches it against the job description. A good candidate with a two-column PDF can lose before anyone reads a word.
+
+## Approach
+
+spaCy handles the parsing and entity extraction. sentence-transformers turn both the resume and the job description into vectors so they can be compared by meaning rather than by exact words. A RAG pipeline, retrieval-augmented generation, pulls the relevant parts of the job description before generating feedback, so the advice points at the actual posting.
+
+FastAPI serves it, React renders it.
+
+## Results
+
+87% ATS pass rate on the resumes tested.
+
+## Limits, and what I would do next
+
+The pass rate is against the parsing rules I modelled. Every real ATS is a little different and none of them publish their rules, so this predicts a class of behaviour rather than one specific product.
+
+Optimising for the filter is a narrow goal. The genuinely useful version would tell you when your resume is fine and the job is a bad fit, which no tool has an incentive to say.

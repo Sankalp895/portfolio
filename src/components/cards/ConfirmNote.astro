@@ -1,0 +1,45 @@
+---
+interface Props {
+  items: readonly string[] | string[];
+  compact?: boolean;
+}
+
+const { items, compact = false } = Astro.props;
+---
+
+{items.length > 0 && (
+  <aside class:list={['confirm', { compact }]} role="note">
+    <span class="badge badge-review">TODO: confirm</span>
+    <ul>
+      {items.map((i) => <li>{i}</li>)}
+    </ul>
+  </aside>
+)}
+
+<style>
+  .confirm {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    border: 1px dashed color-mix(in srgb, var(--warn) 55%, var(--grid));
+    border-radius: var(--radius);
+    background: var(--warn-soft);
+    padding: 0.85rem 1rem;
+    margin: 1.5rem 0;
+  }
+
+  .confirm.compact { padding: 0.6rem 0.75rem; margin: 0.75rem 0; }
+
+  ul { margin: 0; padding-left: 1.1rem; }
+
+  li {
+    font-family: var(--font-ui);
+    font-size: 0.8125rem;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+
+  @media (max-width: 560px) {
+    .confirm { flex-direction: column; gap: 0.5rem; }
+  }
+</style>

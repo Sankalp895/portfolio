@@ -1,0 +1,69 @@
+---
+title: regexray
+tagline: A regex debugger and ReDoS analyser written with nothing but the Python standard library.
+period: '2025'
+categories: ['Backend', 'Security']
+flagship: false
+order: 9
+status: shipped
+headline:
+  value: '0'
+  label: 'Third-party dependencies'
+secondMetric:
+  first: 'The backtracking matcher returns the right answer on every test pattern.'
+  second: 'Right answer, wrong cost. The Thompson NFA simulator gets the same answers in time that does not explode, which is the whole point of a ReDoS check.'
+proof:
+  - value: '0'
+    label: 'Dependencies outside the Python standard library'
+  - value: '4'
+    label: 'Hand-written stages: tokeniser, parser, backtracking matcher, Thompson NFA'
+  - value: 'Solo'
+    label: 'Hackathon entry, built alone'
+stack:
+  - 'Python standard library only'
+  - Tokeniser
+  - Parser
+  - Backtracking matcher
+  - Thompson NFA
+links:
+  - label: 'Code'
+    notPublic: true
+confirm: []
+---
+
+## Problem
+
+A regular expression is easy to write and hard to see into. When one is slow, the error message tells you nothing, because the failure is not in the pattern's meaning, it is in how the engine searches.
+
+ReDoS, regular-expression denial of service, is the sharp end of that. A pattern with nested repetition can take exponential time on an input that is a few dozen characters long. The pattern looks harmless in review, and it takes a server down.
+
+I built this alone for a hackathon, with no libraries.
+
+## Approach
+
+Four stages, all hand-written, using only the Python standard library.
+
+The tokeniser splits the pattern into its pieces. The parser turns those into a tree. The backtracking matcher runs the pattern the way a typical engine does, trying options and reversing out of dead ends, which is exactly where the exponential cost comes from. The Thompson NFA simulator runs the same pattern a different way: it follows all possible states at once, so its cost grows with pattern size times input size rather than exploding.
+
+Having both is the design. The backtracking matcher is what you are trying to protect. The NFA is the reference that shows you what the answer should cost.
+
+## System
+
+```text
+pattern  ->  tokeniser  ->  parser  ->  syntax tree
+                                            |
+                        +-------------------+-------------------+
+                        |                                       |
+              backtracking matcher                   Thompson NFA simulator
+              (step counter, the ReDoS risk)         (reference answer, safe cost)
+```
+
+## Results
+
+Zero dependencies was a constraint I set on purpose. It meant writing the parser rather than importing one, and it meant the step counter measures my matcher rather than someone else's optimisations.
+
+## Limits, and what I would do next
+
+It implements the regex features I wrote, not everything a production engine supports. Backreferences and lookaround are where hand-rolled engines usually stop, and where real patterns often live.
+
+The step counter shows the cost on the inputs you give it. Searching for the worst-case input automatically is the harder and more useful version.

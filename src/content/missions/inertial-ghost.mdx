@@ -1,0 +1,71 @@
+---
+title: Inertial Ghost
+tagline: Drone navigation with no GPS, using an error-state Kalman filter over three sensors.
+period: 2025 to 2026
+categories: ['Robotics']
+flagship: false
+order: 5
+status: verified
+headline:
+  value: 'IMU + VIO + UWB'
+  label: 'Three sensors, one ESKF'
+secondMetric:
+  first: 'The fused trajectory tracked the truth, so the fusion looked right.'
+  second: 'Each sensor has a different failure mode. VIO fails on blank walls, UWB fails behind metal, and the IMU never fails, it just drifts. The test that matters is dropping one at a time.'
+proof:
+  - value: '3'
+    label: 'Sensor streams fused: IMU, VIO, UWB'
+  - value: 'ESKF'
+    label: 'Error-state Kalman filter as the estimator core'
+  - value: 'A*'
+    label: 'Planning over the estimated map'
+stack:
+  - Python
+  - ESKF
+  - VIO
+  - UWB
+  - 'A* planning'
+  - Godot 4
+links:
+  - label: 'Repository'
+    href: 'https://github.com/Sankalp895/inertial-ghost'
+confirm:
+  - 'Add the Inertial Ghost Godot clip to /public/media/inertial-ghost/.'
+---
+
+## Problem
+
+Indoors, underground, or anywhere with a roof, a drone has no satellite fix. Its inertial measurement unit, the IMU, still works, but integrating acceleration twice turns a small bias into a large position error within seconds. It does not fail loudly. It drifts.
+
+## Approach
+
+Three sensors, chosen because they fail differently.
+
+The IMU gives high-rate motion and drifts. VIO, visual-inertial odometry, tracks features in the camera image to estimate motion, and it fails when there is nothing to track, like a blank wall. UWB, ultra-wideband ranging, measures distance to fixed anchors, and it fails when something metal sits in the way.
+
+An ESKF, an error-state Kalman filter, fuses them. It tracks the correction to the current estimate rather than the estimate itself, which handles rotation properly and keeps the maths linear where it needs to be. On top of the estimate, A* plans a route.
+
+Godot 4 draws it, because a filter you can only read as a CSV is a filter you will misunderstand.
+
+## System
+
+```text
+IMU  ->  |
+VIO  ->  |  ESKF (position, velocity, attitude, biases)  ->  estimated pose
+UWB  ->  |                                                       |
+                                                        A* route planning
+                                                                 |
+                                                     Godot 4 visualisation
+```
+
+## Results
+
+The filter core, the planner and the visualisation all run. The useful test is not the clean run, it is dropping a sensor mid-flight and watching whether the estimate degrades gracefully or jumps.
+
+This project and the SkyScout estimator share a lineage. The same ESKF thinking, and the same habit of checking the recovered biases rather than the headline error, went into both.
+
+## Limits, and what I would do next
+
+UWB needs anchors placed in advance, which is fine in a warehouse and useless in an unknown building. The honest framing is that this is an indoor-with-infrastructure solution, not a go-anywhere one.
+
+Next: log the filter's consistency, not just its error, so the estimate's own confidence can be checked against how wrong it actually is.

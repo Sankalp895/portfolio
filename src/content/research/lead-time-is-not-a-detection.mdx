@@ -1,0 +1,109 @@
+---
+title: 'A Lead Time Is Not a Detection'
+subtitle: 'Auditing Grokking Predictor Signals'
+order: 1
+status: preprint
+statusDetail: 'Preprint. S. Singh, 2026.'
+venue: 'Preprint'
+year: '2026'
+plainAbstract: 'Grokking is when a neural network memorises its training data, looks stuck for a long time, and then suddenly starts generalising. Several papers report signals that warn you before it happens, quoting how many steps of lead time they give. This paper audits those claims. Under a rule fixed in advance, most of the reported lead time turns out to depend on how you were allowed to measure, not on the signal seeing anything. One signal survives the strict rule on every seed. A widely cited one fires on none.'
+oneLine: 'Under a firing rule fixed before looking, the Fourier signals warned before grokking on every seed, weight norm never fired, and effective embedding rank arrived after the event on five seeds out of eight.'
+heroFigure: 'inline:grokking-curve'
+keyResults:
+  - value: '8/8'
+    label: 'Seeds where the Fourier signal family led the test-accuracy jump'
+    source: 'logs/lead_times_summary.csv'
+  - value: '2,550 to 2,650'
+    label: 'Median steps of lead for the three Fourier signals'
+    source: 'logs/lead_times_summary.csv'
+  - value: '0/8'
+    label: 'Seeds where weight norm fired at all'
+    source: 'logs/lead_times_summary.csv'
+  - value: '5/8'
+    label: 'Seeds where effective embedding rank fired after grokking, not before'
+    source: 'logs/lead_times.csv'
+  - value: '5/5'
+    label: 'Replication seeds on modular subtraction'
+    source: 'logs/lead_times_sub_summary.csv'
+stack:
+  - PyTorch
+  - NumPy
+  - Matplotlib
+  - LaTeX
+links:
+  - label: 'PDF'
+    href: '#'
+    confirm: true
+  - label: 'Code'
+    notPublic: true
+bibtex: |
+  @misc{singh2026leadtime,
+    title  = {A Lead Time Is Not a Detection: Auditing Grokking Predictor Signals},
+    author = {Singh, Sankalp},
+    year   = {2026},
+    note   = {Preprint}
+  }
+confirm:
+  - 'Add the preprint PDF link once it is hosted.'
+---
+
+import Figure from '@/components/research/Figure.astro';
+import InlineFigure from '@/components/research/InlineFigure.astro';
+import GrokkingChart from '@/components/research/GrokkingChart.tsx';
+import { grokkingFigures as F } from '@/data/research/figures';
+
+## The finding
+
+A small transformer learning modular addition memorises its training set within a few hundred steps, then sits at chance on held-out data for thousands more, then suddenly generalises. Several signals have been proposed that are supposed to warn you this is coming.
+
+I fixed the rule for what counts as a warning before looking at any of the results: a signal has to move five standard deviations away from its own early-training baseline and stay there for three consecutive checkpoints.
+
+Under that rule, the three Fourier measures warned before the jump on all eight seeds, with a median lead of roughly 2,600 steps. Weight norm, which is widely cited, never fired once. Effective embedding rank fired on five of eight seeds only after generalisation had already happened, which is not a warning at all.
+
+## Why it matters
+
+A lead time is a number you can always produce. Take any curve, pick the moment it crosses some line, and subtract. You get a positive number, and a positive number looks like a result.
+
+If the threshold is chosen after seeing where the jump was, the number measures your freedom to choose, not the signal. The gap between the two is the whole subject of the paper: one of these signals survives a rule it did not get to pick, and the others do not.
+
+## Method
+
+<Figure paper="grokking" name={F.phase.name} alt={F.phase.alt} caption={F.phase.caption} source={F.phase.source} w={F.phase.w} h={F.phase.h} />
+
+A one-layer transformer, 128-dimensional model width, four heads, trained on (a + b) mod 97 with 30% of the pairs used for training. 223,360 parameters, 12,000 steps, weight decay 1.0, on CPU. The sweep above fixed the weight decay and training fraction, because grokking does not happen everywhere in that space.
+
+Six signals were tracked at every hundredth step: weight norm, embedding norm, effective embedding rank, and three Fourier measures of the embedding spectrum. The firing rule was written down first and applied to all of them identically.
+
+## Results
+
+<InlineFigure name="lead-times" caption="Lead time for every signal on every seed. Each dot is one seed. Amber dots fired after the jump rather than before it, which is how effective embedding rank can fire on eight seeds and still be late on five." source="logs/lead_times.csv" />
+
+<GrokkingChart client:visible />
+
+<Figure paper="grokking" name={F.leadTimes.name} alt={F.leadTimes.alt} caption={F.leadTimes.caption} source={F.leadTimes.source} w={F.leadTimes.w} h={F.leadTimes.h} />
+
+Weight norm fired on zero of eight seeds. It is the signal most often quoted, and under a rule it did not choose it detects nothing.
+
+The three Fourier measures each fired on eight of eight, with median leads of 2,550, 2,650 and 2,650 steps. Embedding norm also fired on all eight, with a shorter median lead of 1,700.
+
+Effective embedding rank is the interesting failure. It fired on eight seeds, so a table of firing counts would make it look successful, but on five of those the firing step came after the test-accuracy crossing. Averaging its lead times without checking the sign would have produced a positive mean and a false claim.
+
+<Figure paper="grokking" name={F.signals.name} alt={F.signals.alt} caption={F.signals.caption} source={F.signals.source} w={F.signals.w} h={F.signals.h} />
+
+<Figure paper="grokking" name={F.spectrum.name} alt={F.spectrum.alt} caption={F.spectrum.caption} source={F.spectrum.source} w={F.spectrum.w} h={F.spectrum.h} />
+
+## What I checked that could have broken it
+
+The obvious worry is that the result is specific to addition, so I repeated the whole measurement on modular subtraction with five fresh seeds. Weight norm again fired on zero of five. The Fourier measures again fired on five of five, with longer median leads of 4,600 to 4,900 steps.
+
+<Figure paper="grokking" name={F.leadTimesSub.name} alt={F.leadTimesSub.alt} caption={F.leadTimesSub.caption} source={F.leadTimesSub.source} w={F.leadTimesSub.w} h={F.leadTimesSub.h} />
+
+The second worry is the definition of grokking itself. The step at which a run counts as grokked depends on the accuracy threshold, and the lead times shift with it. The lead-time study uses a test accuracy of 0.5, and both thresholds are recorded in the run files so the choice is visible rather than buried.
+
+## Limits
+
+One task family, one architecture, one model size. Modular arithmetic is where grokking is easiest to produce and study, and nothing here shows the same signals behave this way on a real dataset.
+
+Eight seeds is enough to separate zero from eight. It is not enough to put a confident interval on a median lead time, and the spread across seeds is wide: the standard deviation on the Fourier leads is over 1,100 steps.
+
+The Fourier measures are also the signals most obviously related to the mechanism people believe drives grokking on this task. That they work here is a smaller claim than it might look: they were the best guess going in, and they were tested on the task that guess was made for.

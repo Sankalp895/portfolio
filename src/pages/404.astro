@@ -1,0 +1,56 @@
+---
+import Base from '@/layouts/Base.astro';
+---
+
+<Base title="No path found" description="404. The planner checked, and there is genuinely no route to this page.">
+  <section class="shell wrap">
+    <p class="label">Error 404</p>
+    <h1>No path found.</h1>
+    <p class="lede">
+      In SkyScout this exact result was once correct. A* returned no path, I assumed the planner was
+      broken, and a connected-components check showed the goal really was cut off. The empty answer was
+      the right answer.
+    </p>
+    <p class="lede">This time it is simpler. There is no page at that address.</p>
+
+    <pre class="term mono">planner: A*
+start:   {Astro.url.pathname}
+goal:    unreachable
+check:   connected components -> goal not in free space
+result:  no path (correct)</pre>
+
+    <div class="btns">
+      <a href="/" class="btn btn-accent">Back to the start</a>
+      <a href="/missions/" class="btn">Missions</a>
+      <button type="button" class="btn" data-open-console>Open the console</button>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .wrap { padding: clamp(3rem, 10vw, 6rem) 0; max-width: 680px; }
+
+  h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 0.75rem 0 1rem; }
+
+  .lede {
+    margin: 0 0 1rem;
+    color: var(--muted);
+    font-size: 1.0625rem;
+    line-height: 1.65;
+  }
+
+  .term {
+    margin: 1.75rem 0;
+    padding: 1rem 1.15rem;
+    background: var(--panel);
+    border: var(--rule);
+    border-left: 2px solid var(--accent);
+    border-radius: var(--radius);
+    font-size: 0.8125rem;
+    line-height: 1.7;
+    color: var(--muted);
+    overflow-x: auto;
+  }
+
+  .btns { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+</style>

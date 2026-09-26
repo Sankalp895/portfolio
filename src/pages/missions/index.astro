@@ -1,0 +1,134 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import MissionCard from '@/components/cards/MissionCard.astro';
+
+const missions = (await getCollection('missions')).sort((a, b) => a.data.order - b.data.order);
+const categories = ['All', 'Robotics', 'Simulation', 'Research', 'ML', 'Backend', 'Security'];
+const counts = Object.fromEntries(
+  categories.map((c) => [c, c === 'All' ? missions.length : missions.filter((m) => m.data.categories.includes(c as never)).length])
+);
+---
+
+<Base
+  title="Missions"
+  description="Every project: a Mars scout drone, an adversarial swarm defence sim, an AI compliance platform, a GPS-denied estimator, a regex analyser and more."
+>
+  <section class="shell head">
+    <p class="label">Missions</p>
+    <h1>{missions.length} projects, and the number in each one I stopped trusting.</h1>
+    <p class="lede">
+      Every card carries a headline result on the front. Press <span class="mono">Second metric</span> to
+      turn it over and see what that result was hiding, or what I had to check before I believed it.
+    </p>
+  </section>
+
+  <section class="shell">
+    <div class="filters" role="group" aria-label="Filter projects by area">
+      {categories.map((c) => (
+        <button type="button" class:list={['chip', { on: c === 'All' }]} data-filter={c}>
+          {c}
+          <span class="count tabular">{counts[c]}</span>
+        </button>
+      ))}
+    </div>
+
+    <div class="grid" id="mission-grid">
+      {missions.map((m) => (
+        <div class="cell" data-cats={m.data.categories.join(',')}>
+          <MissionCard entry={m} />
+        </div>
+      ))}
+    </div>
+
+    <p class="empty" id="empty" hidden>Nothing in that area yet.</p>
+  </section>
+</Base>
+
+<style>
+  .head { padding-top: clamp(2rem, 5vw, 3.5rem); margin-bottom: 2.5rem; }
+
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0.75rem 0 0.9rem;
+    max-width: 20ch;
+  }
+
+  .lede {
+    margin: 0;
+    max-width: 58ch;
+    color: var(--muted);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: var(--rule);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    border: var(--rule);
+    border-radius: var(--radius);
+    background: var(--panel);
+    color: var(--muted);
+    cursor: pointer;
+    transition: color 0.16s ease, border-color 0.16s ease;
+  }
+
+  .chip:hover { color: var(--ink); }
+
+  .chip.on {
+    color: var(--accent);
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .count { font-size: 0.625rem; opacity: 0.7; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .cell[hidden] { display: none; }
+
+  .empty { color: var(--muted); font-size: 0.9375rem; padding: 2rem 0; }
+</style>
+
+<script is:inline>
+  (function () {
+    var chips = document.querySelectorAll('[data-filter]');
+    var cells = document.querySelectorAll('#mission-grid .cell');
+    var empty = document.getElementById('empty');
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var want = chip.getAttribute('data-filter');
+        chips.forEach(function (c) { c.classList.toggle('on', c === chip); });
+
+        var shown = 0;
+        cells.forEach(function (cell) {
+          var cats = (cell.getAttribute('data-cats') || '').split(',');
+          var show = want === 'All' || cats.indexOf(want) !== -1;
+          if (show) { cell.removeAttribute('hidden'); shown++; } else { cell.setAttribute('hidden', ''); }
+        });
+
+        if (empty) {
+          if (shown === 0) { empty.removeAttribute('hidden'); } else { empty.setAttribute('hidden', ''); }
+        }
+      });
+    });
+  })();
+</script>

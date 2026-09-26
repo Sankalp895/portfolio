@@ -1,0 +1,84 @@
+---
+title: CompliSense
+tagline: An AI legal-compliance platform for Indian small and medium businesses.
+period: 2025 to 2026
+categories: ['ML', 'Backend']
+flagship: true
+order: 4
+status: shipped
+headline:
+  value: '84.8%'
+  label: 'Macro F1 for BERT named-entity recognition'
+secondMetric:
+  first: 'Macro F1 of 84.8% across the entity types.'
+  second: 'Macro F1 averages every class equally, so a rare obligation type carries the same weight as a common one. That is the number I want for compliance, where the rare clause is the one that bites.'
+proof:
+  - value: '84.8%'
+    label: 'BERT NER macro F1'
+  - value: 'PostgreSQL 16 + pgvector'
+    label: 'Document store and similarity search'
+  - value: 'Neo4j 5'
+    label: 'Regulation graph'
+  - value: 'Zero cost'
+    label: 'Deployed on Supabase, Render, Vercel and AuraDB free tiers'
+stack:
+  - BERT
+  - XGBoost
+  - SHAP
+  - PostgreSQL 16
+  - pgvector
+  - Neo4j 5
+  - Supabase
+  - Render
+  - Vercel
+  - AuraDB
+links:
+  - label: 'Code'
+    notPublic: true
+  - label: 'Live demo'
+    href: '#'
+    confirm: true
+confirm:
+  - 'Confirm whether CompliSense has a live demo URL, and get Parth\u2019s okay before showing it.'
+  - 'Add CompliSense screenshots to /public/media/complisense/.'
+---
+
+## Problem
+
+A small business in India is subject to more regulation than it can read. The rules live in long documents, they change, and missing one is expensive. Large companies pay a compliance team. Smaller ones guess.
+
+This is my dissertation project, built with Parth and supervised by Dr. Ashish Joshi.
+
+## Approach
+
+Three pieces, each doing one job.
+
+Named-entity recognition, or NER, means pulling the specific things out of a document: which entity, which obligation, which deadline. A BERT model does that, and reaches 84.8% macro F1.
+
+XGBoost scores risk, and SHAP explains the score. SHAP attributes a prediction to the individual inputs that drove it, which matters here because "you are non-compliant" is not an acceptable answer on its own. A business needs to know which clause caused it.
+
+Regulations reference each other, so the relationships go in Neo4j, a graph database, while the documents and their embeddings go in PostgreSQL 16 with pgvector for similarity search.
+
+## System
+
+```text
+regulation documents  ->  BERT NER  ->  entities, obligations, deadlines
+                                              |
+                          Postgres 16 + pgvector (documents, embeddings)
+                                              |
+                              Neo4j 5 (which rule references which)
+                                              |
+                              XGBoost risk score  ->  SHAP explanation
+```
+
+## Results
+
+84.8% macro F1 on the entity types. Macro, not weighted, on purpose: it averages the classes equally, so a rare obligation type counts as much as a common one. A weighted number would have looked better and meant less.
+
+The whole platform runs at zero hosting cost on free tiers: Supabase, Render, Vercel and AuraDB. For the businesses this is aimed at, running cost is part of whether the thing is usable at all.
+
+## Limits, and what I would do next
+
+An 84.8% macro F1 means roughly one in six entity decisions is wrong somewhere in the mix. This is a tool for a person reviewing compliance, not a replacement for one, and the interface should keep saying so.
+
+The regulation graph is only as current as the last time someone loaded the documents. Regulation changes, and a stale graph is confidently wrong rather than obviously empty.

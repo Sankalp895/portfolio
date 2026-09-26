@@ -1,0 +1,48 @@
+---
+title: GLCM Texture Analysis
+tagline: Image texture features built from scratch, and reused years later in a Mars hazard map.
+period: 2024 to 2025
+categories: ['ML']
+flagship: false
+order: 10
+status: shipped
+headline:
+  value: 'From scratch'
+  label: 'Grey-level co-occurrence matrices written in NumPy'
+secondMetric:
+  first: 'The feature values matched the reference implementation, so the code was correct.'
+  second: 'Correct is not the same as useful. The real test came later, when these features had to separate rock from sand in SkyScout perception.'
+proof:
+  - value: 'NumPy'
+    label: 'Co-occurrence matrices implemented directly, not imported'
+  - value: 'Reused'
+    label: 'Feeds the SkyScout hazard map'
+stack:
+  - NumPy
+  - Pillow
+  - Flask
+links:
+  - label: 'Repository'
+    href: 'https://github.com/Sankalp895/Image-Texture-Analysis'
+confirm: []
+---
+
+## Problem
+
+Two patches of a photograph can have exactly the same average brightness and be completely different surfaces. One is smooth sand, one is broken rock. Brightness alone cannot tell them apart. Texture can.
+
+## Approach
+
+A grey-level co-occurrence matrix, or GLCM, counts how often a pixel of one brightness sits next to a pixel of another brightness, at a chosen distance and direction. Smooth regions put their counts on the diagonal, because neighbours are similar. Rough regions spread the counts out.
+
+I built the matrices in NumPy rather than calling a library, then derived the standard features from them. Pillow loads the images, Matplotlib draws the surfaces, and Flask puts a small interface in front of it. There is no computer vision library in this project at all, which was the point.
+
+## Results
+
+Writing it by hand is why it was still useful later. When SkyScout needed to tell a hazardous surface from a drivable one from above, I already had texture features I understood well enough to trust, and to debug.
+
+## Limits, and what I would do next
+
+GLCM features depend on the distance and direction you pick, and on the number of grey levels you quantise to. Those choices are part of the result, and they need reporting alongside it.
+
+Texture also depends on scale. Gravel from two metres up and boulders from twenty metres up can produce the same numbers, which is a real risk for an aerial hazard map.

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 270" role="img" aria-label="Margin of each indicator against the null model with confidence intervals">
+<style>
+  .bg { fill: none; }
+  .ax { stroke: var(--grid); stroke-width: 1; }
+  .tk { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+  .lb { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); letter-spacing: 0.08em; }
+  .ttl { font-family: var(--font-ui); font-size: 14px; fill: var(--ink); font-weight: 600; }
+  .train { fill: none; stroke: var(--muted); stroke-width: 2; }
+  .test { fill: none; stroke: var(--ink); stroke-width: 2.4; }
+  .mk-fire { stroke: var(--accent); stroke-width: 1.6; stroke-dasharray: 4 3; }
+  .mk-grok { stroke: var(--verified); stroke-width: 1.6; }
+  .note { font-family: var(--font-mono); font-size: 10.5px; fill: var(--muted); }
+  .bar { fill: var(--accent); }
+  .bar-dim { fill: var(--muted); opacity: 0.4; }
+  .zero { stroke: var(--ink); stroke-width: 1.2; }
+  .dot { fill: var(--accent); }
+  .dot-late { fill: var(--warn); }
+  .name { font-family: var(--font-ui); font-size: 12px; fill: var(--ink); }
+  .val { font-family: var(--font-mono); font-size: 11px; fill: var(--muted); }
+</style>
+<text class="ttl" x="10" y="18">Margin against the input-only null model, six most shifted cells</text><line class="ax" x1="369.5408668776236" y1="34" x2="369.5408668776236" y2="220"/><text class="tk" x="369.5408668776236" y="238" text-anchor="middle">-0.75</text><line class="ax" x1="517.8307227795917" y1="34" x2="517.8307227795917" y2="220"/><text class="tk" x="517.8307227795917" y="238" text-anchor="middle">-0.5</text><line class="ax" x1="666.1205786815597" y1="34" x2="666.1205786815597" y2="220"/><text class="tk" x="666.1205786815597" y="238" text-anchor="middle">-0.25</text><line class="ax" x1="814.4104345835277" y1="34" x2="814.4104345835277" y2="220"/><text class="tk" x="814.4104345835277" y="238" text-anchor="middle">0</text><line class="zero" x1="814.4104345835277" y1="34" x2="814.4104345835277" y2="220"/><text class="note" x="822.4104345835277" y="26">0 = ties the null</text><text class="lb" x="550" y="262" text-anchor="middle">margin in Spearman correlation (negative means the null did better)</text><text class="name" x="238" y="65" text-anchor="end">PDE residual</text><text class="val" x="238" y="81" text-anchor="end">fails: null better</text><rect x="644.7750110191039" y="56" width="169.63542356442383" height="18" rx="3" class="bar" opacity="0.9"/><line x1="616.8555198790891" y1="65" x2="674.8148708487008" y2="65" stroke="var(--ink)" stroke-width="1.6"/><line x1="616.8555198790891" y1="59" x2="616.8555198790891" y2="71" stroke="var(--ink)" stroke-width="1.6"/><line x1="674.8148708487008" y1="59" x2="674.8148708487008" y2="71" stroke="var(--ink)" stroke-width="1.6"/><text class="val" x="860" y="69">-0.286</text><text class="name" x="238" y="127" text-anchor="end">Seed-ensemble disagreement</text><text class="val" x="238" y="143" text-anchor="end">fails: null better</text><rect x="402.8257233285743" y="118" width="411.5847112549534" height="18" rx="3" class="bar" opacity="0.9"/><line x1="291.8081803395206" y1="127" x2="493.42498461758066" y2="127" stroke="var(--ink)" stroke-width="1.6"/><line x1="291.8081803395206" y1="121" x2="291.8081803395206" y2="133" stroke="var(--ink)" stroke-width="1.6"/><line x1="493.42498461758066" y1="121" x2="493.42498461758066" y2="133" stroke="var(--ink)" stroke-width="1.6"/><text class="val" x="860" y="131">-0.694</text><text class="name" x="238" y="189" text-anchor="end">Frozen-feature embedding probe</text><text class="val" x="238" y="205" text-anchor="end">fails: null better</text><rect x="768.6295215242134" y="180" width="45.780913059314344" height="18" rx="3" class="bar" opacity="0.9"/><line x1="743.8963196260077" y1="189" x2="789.1892140490578" y2="189" stroke="var(--ink)" stroke-width="1.6"/><line x1="743.8963196260077" y1="183" x2="743.8963196260077" y2="195" stroke="var(--ink)" stroke-width="1.6"/><line x1="789.1892140490578" y1="183" x2="789.1892140490578" y2="195" stroke="var(--ink)" stroke-width="1.6"/><text class="val" x="860" y="193">-0.077</text>
+</svg>

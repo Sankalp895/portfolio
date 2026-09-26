@@ -1,0 +1,54 @@
+---
+title: AI for Drug Discovery
+tagline: Predicting bioactivity for colon-cancer compounds, leading the ML side of a team of five.
+period: May to Jun 2024
+categories: ['ML', 'Research']
+flagship: false
+order: 11
+status: shipped
+headline:
+  value: '5'
+  label: 'Person research team, ML led by me'
+secondMetric:
+  first: 'The models scored well on the held-out split.'
+  second: 'Molecules are not independent rows. Very similar compounds landing on both sides of a random split make a model look better than it is. Chemistry decides what counts as a fair split.'
+proof:
+  - value: 'RDKit'
+    label: 'Molecular fingerprints as the feature representation'
+  - value: 'RF + ANN'
+    label: 'Two model families, compared rather than assumed'
+  - value: 'GGSIPU'
+    label: 'Student research internship, May to June 2024'
+stack:
+  - RDKit
+  - Random Forest
+  - ANN
+  - scikit-learn
+  - Pandas
+links: []
+confirm: []
+---
+
+## Problem
+
+Testing a compound in the lab is slow and expensive. If a model can rank which compounds are worth testing first, the same budget covers more ground. The target here was bioactivity prediction for colon-cancer compounds.
+
+This was my first research internship, at GGSIPU in May and June 2024. I led the machine learning work for a team of five.
+
+## Approach
+
+A molecule is a graph, not a table row, so it needs turning into numbers first. RDKit fingerprints do that by encoding which substructures are present as a fixed-length vector.
+
+On those features I trained two model families, a Random Forest and an artificial neural network, and compared them rather than assuming the neural network would win. On fingerprint features with a dataset this size, that assumption is often wrong.
+
+## Results
+
+The work ran end to end: featurisation, training, comparison, and a recommendation the rest of the team could act on.
+
+It was also the first time a model of mine had to answer to something outside itself. A loss curve going down is a claim about the optimiser. Whether a compound is worth a lab's time is a claim about chemistry.
+
+## Limits, and what I would do next
+
+Fingerprint features throw away 3D structure, which matters for how a molecule actually binds.
+
+The split is the part I would redo. A random split lets near-identical compounds appear in both training and test, which inflates the score. A scaffold split, which keeps whole structural families on one side, gives a much less flattering and much more honest number.

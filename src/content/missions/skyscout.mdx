@@ -1,0 +1,116 @@
+---
+title: SkyScout
+tagline: A Mars scout drone that maps hazards from the air and hands safe routes to a rover.
+period: 2025 to 2026
+categories: ['Robotics', 'ML']
+flagship: true
+order: 1
+status: verified
+headline:
+  value: '10.9 m'
+  label: 'Dead-reckoning drift in 14.4 s, before the filter went in'
+  source: 'Localisation run, seed 20260808'
+secondMetric:
+  first: 'The assembly passed its clearance check. It passed on nine straight design changes.'
+  second: 'A solid overlap test found the hinges had been interfering the whole time. Nine passes of a weak test is not evidence.'
+proof:
+  - value: '218'
+    label: 'CAD solids across both vehicles'
+    source: 'build123d model tree'
+  - value: '35 / 34'
+    label: 'Rover links and joints'
+  - value: '21 / 20'
+    label: 'Drone links and joints'
+  - value: '10.9 m / 14.4 s'
+    label: 'Dead-reckoning drift, later crushed by the ESKF'
+  - value: '197.57 to 0.38 m'
+    label: 'Final position error uncorrected against corrected, over a 40 s flight with 39 fixes'
+    source: 'brain/b2_step4_correct.json'
+  - value: '0.92 / 0.97'
+    label: 'Hazard map F1 and recall against ground truth'
+    source: 'brain/b4_step3_mapping.json'
+  - value: '99.95%'
+    label: 'Map coverage, 4094 of 4096 cells known'
+    source: 'brain/b4_step3_mapping.json'
+  - value: '80 x 80 m'
+    label: 'Procedural Mars terrain, seed 20260808'
+  - value: '15+'
+    label: 'Silent bugs caught by a second metric'
+stack:
+  - build123d
+  - OpenCASCADE
+  - URDF / SRDF / SDF
+  - Genesis
+  - MuJoCo
+  - NumPy
+  - Blender 4.5
+links:
+  - label: 'Repository'
+    href: 'https://github.com/Sankalp895/skyscout-mars'
+confirm:
+  - 'Add the Blender renders and HUD frames to /public/media/skyscout/.'
+---
+
+import EskfDemo from '@/components/demos/EskfDemo.tsx';
+
+
+## Problem
+
+A rover on Mars can only see as far as its own mast. It picks a route from a ground-level view, drives into a rock field it could not see, and loses a day getting out. A drone flying above it can see the whole neighbourhood at once, but only if the drone knows where it is. There is no GPS on Mars.
+
+So the problem splits in two. Build a drone that can hold its own position without a satellite fix, and build the map it hands back so a rover can trust it.
+
+I built the whole pipeline myself: the two vehicles in CAD, the physics, the estimator, the planner, the perception, and the render at the end.
+
+## Approach
+
+The drone flies a lawnmower survey over an 80 by 80 m patch of procedural Mars terrain, generated from seed 20260808 so every run is repeatable. As it flies, it turns what it sees into a hazard map, and the planner runs A* over that map to find a route the rover can actually drive.
+
+The estimator is an ESKF, an error-state Kalman filter. A Kalman filter tracks a best guess of where you are and how sure you are about it. The error-state form tracks the small correction to that guess rather than the guess itself, which behaves much better for rotating bodies. Without it, dead reckoning drifted 10.9 m in 14.4 seconds. With it, the drift was gone.
+
+The hazard map uses Bayesian log-odds, which means each cell holds evidence for and against "this is dangerous" and new observations add to it rather than overwrite it. One bad frame cannot flip a cell on its own.
+
+## System
+
+```text
+build123d CAD  ->  URDF / SRDF / SDF  ->  Genesis physics (Mars gravity 3.72, headless)
+                                                |
+                          IMU + depth frames ---+
+                                                |
+                               ESKF localisation (bias states)
+                                                |
+                    depth + GLCM texture  ->  Bayesian log-odds hazard map
+                                                |
+                                         A* route for the rover
+                                                |
+                                      Blender 4.5 cinematic render
+```
+
+The rover is 35 links and 34 joints, the drone 21 and 20, about 218 solids in total. Genesis runs headless at Mars gravity, 3.72 m/s². MuJoCo is there as a second physics opinion, which matters more than it sounds: two engines disagreeing is usually the first sign that a joint is described wrong.
+
+## Results
+
+Over a 40 second flight with 39 position fixes, the final error was 197.57 m without correction and 0.38 m with it. The mean corrected error was 0.54 m.
+
+The estimator did more than reduce the error. It recovered the true sensor biases I had injected into the simulation, which is the harder test. A filter can post a small position error by cancelling two separate mistakes against each other. Recovering the hidden values you planted is much harder to fake. I also check ANEES, which compares the filter's own claimed uncertainty against how wrong it actually is, so a confident and wrong filter cannot pass quietly.
+
+
+<EskfDemo client:visible />
+
+The hazard map is scored against the ground truth it never sees: F1 0.92, recall 0.97, and 99.95% coverage, which is 4094 of 4096 cells. Recall matters more than precision here. Calling safe ground hazardous costs the rover a detour. Missing a real hazard costs the rover.
+
+## The bug I caught
+
+The hinge one still annoys me.
+
+My clearance check measured the distance between two hinge parts and passed. It passed on nine straight design changes, so I stopped thinking about it. When I finally ran a boolean intersection test, asking whether the two solids actually share volume, the hinges had been interfering the entire time. The distance check was measuring between the wrong pair of faces, so it returned a healthy number for a broken assembly.
+
+The gyroscope one was worse, because it was quieter. Position error looked fine, so the gyroscope integration looked fine. A test aimed only at the frame convention, which axis set the rates are measured in, came back 187 times off.
+
+There are more than fifteen of these. They are on the [Rigor Log](/rigor-log/).
+
+## Limits, and what I would do next
+
+Everything here is simulation. The terrain is procedural, the sensors are modelled, and the noise is noise I chose. A real Mars camera would give me dust on the lens, low sun angles and rolling shutter, and none of that is in the model.
+
+The survey pattern is fixed. The drone flies the lawnmower whether or not the map is already confident about a region, which wastes flight time on ground it has already cleared. The next version should pick where to look next based on where the map is least certain.

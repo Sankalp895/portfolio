@@ -1,0 +1,89 @@
+---
+title: Global Weather Forecasting
+tagline: Six models on 108,353 observations, and the honest finding is that the ensemble bought almost nothing.
+period: '2025'
+categories: ['ML']
+flagship: false
+order: 7
+status: verified
+headline:
+  value: '0.0004'
+  label: 'The R squared a Random Forest gained over plain linear regression'
+  source: 'model_comparison_table.csv'
+secondMetric:
+  first: 'Best model: Random Forest, test R squared 0.9414. That is the number a dashboard would show.'
+  second: 'Plain linear regression scores 0.9410 on the same split. The forest wins by 0.0004, and its train score of 0.983 against 0.941 on test says it is memorising rather than learning.'
+proof:
+  - value: '0.9414'
+    label: 'Random Forest test R squared for temperature, the best of six models'
+    source: 'model_comparison_table.csv'
+  - value: '0.9410'
+    label: 'Plain linear regression on the same split, 0.0004 behind'
+    source: 'model_comparison_table.csv'
+  - value: '0.983 vs 0.941'
+    label: 'Random Forest train against test R squared, the overfitting gap'
+    source: 'model_comparison_table.csv'
+  - value: '108,353'
+    label: 'Weather observations, 34 engineered features'
+    source: 'GlobalWeatherRepository.csv'
+stack:
+  - scikit-learn
+  - XGBoost
+  - LightGBM
+  - SHAP
+  - Pandas
+  - Streamlit
+links:
+  - label: 'Repository'
+    href: 'https://github.com/Sankalp895/global-weather-forecasting-'
+confirm: []
+---
+
+## Problem
+
+Predict temperature and humidity from a global weather dataset, and find out which model does it best. That is the assignment version of this project, and the assignment version has a predictable ending: train several models, pick the one with the highest score, call it the winner.
+
+The result I actually got is more useful than that, and less flattering.
+
+## Approach
+
+108,353 observations, cleaned and split into 76,392 training rows and 25,464 test rows, with 34 engineered features including lag terms, rolling statistics and temporal encodings.
+
+Six models, trained on identical features and the same split so the comparison means something: Random Forest, XGBoost, LightGBM, Linear, Ridge and Lasso. Then a stacking ensemble on top, using Random Forest, XGBoost and LightGBM as base models with Ridge as the meta-model.
+
+SHAP explains which features drive a prediction. Five anomaly-detection methods run over the data with a consensus vote, so an outlier has to be flagged by more than one method before it counts. A Streamlit dashboard puts it in front of a person.
+
+## Results
+
+Here is the whole comparison for temperature, test R squared:
+
+| Model | Test R² | Test RMSE (°C) |
+| --- | --- | --- |
+| Random Forest | 0.9414 | 2.376 |
+| LightGBM | 0.9413 | 2.379 |
+| Linear | 0.9410 | 2.384 |
+| Ridge | 0.9410 | 2.385 |
+| XGBoost | 0.9408 | 2.390 |
+| Lasso | 0.9259 | 2.673 |
+
+Five of the six models are separated by 0.0006 R squared. The gap between the best model and plain linear regression is 0.0004, which in RMSE is eight thousandths of a degree.
+
+The stacking ensemble reaches 0.9441, gaining 0.003 over the Random Forest for several times the training cost and all of the interpretability.
+
+So the honest headline is not "Random Forest wins". It is that a linear model captured essentially everything in this feature set, and everything else was decoration.
+
+## The bug I caught
+
+The train scores are what gave it away.
+
+Random Forest scores 0.983 on training data and 0.941 on test, a gap of 0.042. Linear regression scores 0.926 on training and 0.941 on test, which is slightly better on data it has never seen. The forest is spending its extra capacity memorising the training set, and the test score it ends up with is no better than the straight line's.
+
+Humidity makes the same point harder. Random Forest goes from 0.953 on training to 0.789 on test, a gap of 0.164, and linear regression lands at 0.786. The forest looks dramatically better right up until you look at the column that matters.
+
+If I had reported only the best test score I would have been technically correct and completely misleading. The comparison table is committed to the repository so anyone can check the gap themselves.
+
+## Limits, and what I would do next
+
+A near-tie between linear and tree models usually means the features are doing the work, not the model. The interesting question is not which regressor to pick, it is whether 34 engineered features have already flattened whatever structure was in the raw data.
+
+The split is random over rows. For weather that is too generous: neighbouring timestamps from the same location end up on both sides, so the model can partly interpolate rather than forecast. A split by location, or forward in time, would give a smaller number and a truer one. That is the version I would run next.

@@ -1,0 +1,120 @@
+---
+title: 'Surrogate Trust Audit'
+subtitle: 'When Can We Trust a Neural PDE Surrogate?'
+order: 2
+status: preprint
+statusDetail: 'Preprint. S. Singh, 2026. Code and full audit trail are public.'
+venue: 'Preprint'
+year: '2026'
+plainAbstract: 'A neural PDE surrogate is a machine-learning model trained to stand in for a slow physics solver. It is much faster, and sometimes it is wrong. Several signals are supposed to tell you when to stop trusting one. I registered a deliberately unintelligent baseline as the primary comparison before running anything: a model of matched capacity that sees only the input, never the physics. It beat every trust signal I tested. That is a negative result, and it is reported as one.'
+oneLine: 'All three trust indicators lost to an input-only null model on the six most shifted cells, with margins of -0.286, -0.694 and -0.077 and every interval below zero.'
+heroFigure: 'inline:null-margins'
+keyResults:
+  - value: '-0.286'
+    label: 'PDE residual against the null, 95% interval -0.333 to -0.235'
+    source: 'tables/primary_h4.csv'
+  - value: '-0.694'
+    label: 'Seed-ensemble disagreement against the null'
+    source: 'tables/primary_h4.csv'
+  - value: '-0.077'
+    label: 'Frozen-feature embedding probe against the null'
+    source: 'tables/primary_h4.csv'
+  - value: '3 of 3'
+    label: 'Indicator classes whose preregistered test returned: fails, null better'
+    source: 'tables/primary_h4.csv'
+  - value: '36'
+    label: 'Grid cells, 1,360 test samples each'
+    source: 'run_manifest.json'
+stack:
+  - PyTorch
+  - FNO
+  - PINN
+  - NumPy
+  - SciPy
+  - pytest
+links:
+  - label: 'Code'
+    href: 'https://github.com/Sankalp895/surrogate-trust-audit'
+bibtex: |
+  @misc{singh2026surrogatetrust,
+    title  = {Surrogate Trust Audit: When Can We Trust a Neural PDE Surrogate?},
+    author = {Singh, Sankalp},
+    year   = {2026},
+    note   = {Preprint. Code: https://github.com/Sankalp895/surrogate-trust-audit}
+  }
+confirm: []
+---
+
+import Figure from '@/components/research/Figure.astro';
+import InlineFigure from '@/components/research/InlineFigure.astro';
+import IndicatorChart from '@/components/research/IndicatorChart.tsx';
+import ConvergenceChart from '@/components/research/ConvergenceChart.tsx';
+import { surrogateFigures as F } from '@/data/research/figures';
+
+## The finding
+
+Partial differential equations describe how physical things change: heat spreading, fluid moving, a wave travelling. Solving them properly is slow, so people train a neural network to stand in for the solver. It is much faster, and sometimes it is wrong in ways the output does not show.
+
+Three signals are meant to tell you when to stop trusting it: the PDE residual of the surrogate's own rollout, disagreement across a seed ensemble, and a frozen-feature embedding probe borrowed from the interatomic-potential literature.
+
+Before running the grid I registered the comparison I would judge all three against: a null model of matched capacity that sees only the input, and never sees the physics, the residual or the solver. On the six most shifted cells, all three indicators lost to it, and every confidence interval sat below zero.
+
+## Why it matters
+
+A null model is a deliberately unintelligent baseline. If it matches your clever method, the clever method is not using the information you think it is.
+
+Losing to an input-only null means these indicators are largely reading which inputs tend to be hard, not detecting that this particular prediction is wrong. That is a real pattern, and it is useful, but it is a prior dressed up as a diagnosis.
+
+Registering the null first is what makes that statement clean. Chosen afterwards, I would have picked a weaker baseline without noticing I was doing it.
+
+## Method
+
+Three PDE families, advection, heat and Burgers. Two architectures, an FNO and a PINN. Six regimes running from in-distribution out to severe shift. That is 36 cells, each with 1,360 test samples.
+
+The whole study rests on the true error being worth measuring against, so every solver was verified first.
+
+<ConvergenceChart client:visible />
+
+<Figure paper="surrogate-trust-audit" name={F.predictionVsTruth.name} alt={F.predictionVsTruth.alt} caption={F.predictionVsTruth.caption} source={F.predictionVsTruth.source} w={F.predictionVsTruth.w} h={F.predictionVsTruth.h} />
+
+## Results
+
+<InlineFigure name="null-margins" caption="The preregistered test. Each bar is one indicator class measured against the input-only null on the six most shifted cells, with its 95% interval. All three sit left of zero, and no interval crosses it." source="tables/primary_h4.csv" />
+
+<IndicatorChart client:visible />
+
+The preregistered test compares each indicator class against the null on the six most shifted cells. All three return the same verdict, recorded in the results table as "fails: null better":
+
+The PDE residual loses by 0.286, with a 95% interval from -0.333 to -0.235. Seed-ensemble disagreement loses by 0.694. The embedding probe, the closest of the three, still loses by 0.077 with an interval from -0.119 to -0.043.
+
+<Figure paper="surrogate-trust-audit" name={F.nullComparison.name} alt={F.nullComparison.alt} caption={F.nullComparison.caption} source={F.nullComparison.source} w={F.nullComparison.w} h={F.nullComparison.h} />
+
+<Figure paper="surrogate-trust-audit" name={F.correlationVsShift.name} alt={F.correlationVsShift.alt} caption={F.correlationVsShift.caption} source={F.correlationVsShift.source} w={F.correlationVsShift.w} h={F.correlationVsShift.h} />
+
+Measured without shift, the same indicators look useful, which is why the shifted case is the one worth testing.
+
+<Figure paper="surrogate-trust-audit" name={F.inDistribution.name} alt={F.inDistribution.alt} caption={F.inDistribution.caption} source={F.inDistribution.source} w={F.inDistribution.w} h={F.inDistribution.h} />
+
+<Figure paper="surrogate-trust-audit" name={F.falseConfidence.name} alt={F.falseConfidence.alt} caption={F.falseConfidence.caption} source={F.falseConfidence.source} w={F.falseConfidence.w} h={F.falseConfidence.h} />
+
+## What I checked that could have broken it
+
+The true error is only meaningful if the reference solvers are right, so each one was refined on a grid and its convergence order measured against the order the scheme should have. All four passed inside a tolerance of 0.15: upwind at 0.993 against an expected 1.0, Lax-Wendroff at 2.000, Crank-Nicolson at 2.000, and the Burgers spectral scheme at 1.956.
+
+The Burgers convergence study uses an exact Cole-Hopf solution rather than a fine-grid rerun of the same scheme, because comparing a scheme against itself cannot see an error it makes consistently.
+
+The harder problem is on the surrogate side, and it limits the result rather than supporting it. The PINN barely learns: measured against simply predicting no change at all, its validation error averages 0.957, where 1.0 would mean it learned nothing useful. The FNO, by comparison, sits at 0.0002. Half of the confirmatory cells therefore describe a model close to the identity map, and I report that rather than dropping those cells.
+
+<Figure paper="surrogate-trust-audit" name={F.representability.name} alt={F.representability.alt} caption={F.representability.caption} source={F.representability.source} w={F.representability.w} h={F.representability.h} />
+
+<Figure paper="surrogate-trust-audit" name={F.inversion.name} alt={F.inversion.alt} caption={F.inversion.caption} source={F.inversion.source} w={F.inversion.w} h={F.inversion.h} />
+
+## Limits
+
+The PINN trainability problem above is the largest one. With half the confirmatory cells describing a model at or near the identity map, the confirmatory comparison is weaker than the cell count suggests.
+
+"Reference-free" is not quite true of the embedding probe, which is fitted on data that the deployment setting would not have.
+
+The residual indicator's noise floor is tied to the same axis as the shift, so part of what it tracks is the regime rather than the error.
+
+Three PDE families at one resolution and one width. Nothing here says the same holds for larger surrogates, other equations, or operator learning at scale.

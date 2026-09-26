@@ -1,0 +1,84 @@
+---
+import { profile } from '@/data/profile';
+import { hasResumePdf } from '@/data/assets';
+
+const deployed = new Date().toISOString().slice(0, 10);
+---
+
+<footer class="foot">
+  <div class="shell foot-inner">
+    <div class="foot-col">
+      <p class="foot-line">{profile.identityLine}</p>
+      <p class="label">Built in Astro. Facts live in content files, not in components.</p>
+    </div>
+
+    <div class="foot-col foot-links">
+      <a href={profile.github} rel="me noopener" target="_blank" class="link-arrow">GitHub</a>
+      <a href={profile.linkedin} rel="me noopener" target="_blank" class="link-arrow">LinkedIn</a>
+      <a href={`mailto:${profile.email}`} class="link-arrow">Email</a>
+      {hasResumePdf ? (
+        <a href={profile.resumePath} class="link-arrow">Resume PDF</a>
+      ) : (
+        <a href="/resume/" class="link-arrow">Resume</a>
+      )}
+    </div>
+  </div>
+
+  <div class="shell foot-meta">
+    <span class="label">Last deployed <span class="tabular">{deployed}</span></span>
+    <span class="label">Press <kbd>Ctrl</kbd> <kbd>K</kbd>, or type <span class="mono">help</span></span>
+  </div>
+</footer>
+
+<style>
+  .foot {
+    border-top: var(--rule);
+    margin-top: 5rem;
+    padding: 2.5rem 0 1.5rem;
+    background: var(--panel);
+  }
+
+  .foot-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 2rem;
+    align-items: start;
+  }
+
+  .foot-line {
+    font-family: var(--font-serif);
+    font-size: 1.05rem;
+    margin: 0 0 0.6rem;
+    max-width: 44ch;
+  }
+
+  .foot-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .foot-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: var(--rule);
+  }
+
+  kbd {
+    font-family: var(--font-mono);
+    font-size: 0.65rem;
+    border: var(--rule);
+    border-radius: 2px;
+    padding: 0.05em 0.35em;
+    background: var(--bg);
+  }
+
+  @media (max-width: 720px) {
+    .foot-inner { grid-template-columns: 1fr; }
+  }
+</style>

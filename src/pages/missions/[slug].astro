@@ -1,0 +1,282 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+import ConfirmNote from '@/components/cards/ConfirmNote.astro';
+
+export async function getStaticPaths() {
+  const missions = await getCollection('missions');
+  const sorted = missions.sort((a, b) => a.data.order - b.data.order);
+  return sorted.map((entry, i) => ({
+    params: { slug: entry.id },
+    props: {
+      entry,
+      prev: sorted[i - 1] ?? null,
+      next: sorted[i + 1] ?? null,
+    },
+  }));
+}
+
+const { entry, prev, next } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+
+const log = (await getCollection('rigor-log'))
+  .filter((l) => l.data.projectSlug === entry.id)
+  .sort((a, b) => a.data.order - b.data.order);
+
+const statusLabel: Record<string, string> = {
+  verified: 'Verified result',
+  'under-review': 'Under review',
+  planned: 'Planned',
+  shipped: 'Shipped',
+};
+
+const statusClass: Record<string, string> = {
+  verified: 'badge-verified',
+  'under-review': 'badge-review',
+  planned: 'badge-planned',
+  shipped: 'badge-accent',
+};
+---
+
+<Base title={d.title} description={d.tagline} wide={false}>
+  <article>
+    <header class="shell top">
+      <nav class="crumbs">
+        <a href="/missions/" class="label">Missions</a>
+        <span class="label sep">/</span>
+        <span class="label now">{entry.id}</span>
+      </nav>
+
+      <div class="titles">
+        <span class:list={['badge', statusClass[d.status]]}>{statusLabel[d.status]}</span>
+        <h1>{d.title}</h1>
+        <p class="tagline">{d.tagline}</p>
+      </div>
+
+      <dl class="meta">
+        <div>
+          <dt class="label">Period</dt>
+          <dd class="mono">{d.period}</dd>
+        </div>
+        <div>
+          <dt class="label">Areas</dt>
+          <dd class="mono">{d.categories.join(', ')}</dd>
+        </div>
+        {d.links.length > 0 && (
+          <div>
+            <dt class="label">Links</dt>
+            <dd class="links">
+              {d.links.map((l) =>
+                l.notPublic ? (
+                  <span class="notpublic mono">{l.label} not public</span>
+                ) : l.confirm ? (
+                  <span class="pending mono">{l.label}: to add</span>
+                ) : (
+                  <a href={l.href} target="_blank" rel="noopener" class="link-arrow">{l.label}</a>
+                )
+              )}
+            </dd>
+          </div>
+        )}
+      </dl>
+    </header>
+
+    <section class="shell proofs">
+      <h2 class="label proof-head">Proof</h2>
+      <div class="proof-grid">
+        {d.proof.map((p) => (
+          <div class="proof">
+            <span class="pv metric">{p.value}</span>
+            <span class="pl">{p.label}</span>
+            {p.source && <span class="ps mono">{p.source}</span>}
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <div class="shell">
+      <ConfirmNote items={d.confirm} />
+    </div>
+
+    <div class="shell body">
+      <div class="prose-paper">
+        <Content />
+      </div>
+    </div>
+
+    {log.length > 0 && (
+      <section class="shell body">
+        <h2 class="log-head">From the Rigor Log</h2>
+        <div class="logs">
+          {log.map((l) => (
+            <div class="logitem">
+              <h3>{l.data.title}</h3>
+              <p class="lf"><span class="lk">First</span>{l.data.firstMetric}</p>
+              <p class="ls"><span class="lk two">Second</span>{l.data.secondMetric}</p>
+            </div>
+          ))}
+        </div>
+        <a href="/rigor-log/" class="link-arrow">The whole Rigor Log</a>
+      </section>
+    )}
+
+    <section class="shell body">
+      <h2 class="log-head">Stack</h2>
+      <ul class="stack">
+        {d.stack.map((s) => <li class="mono">{s}</li>)}
+      </ul>
+    </section>
+
+    <nav class="shell pager">
+      {prev ? (
+        <a href={`/missions/${prev.id}/`} class="pg">
+          <span class="label">Previous</span>
+          <span>{prev.data.title}</span>
+        </a>
+      ) : <span />}
+      {next && (
+        <a href={`/missions/${next.id}/`} class="pg right">
+          <span class="label">Next</span>
+          <span>{next.data.title}</span>
+        </a>
+      )}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .top { padding-top: clamp(1.75rem, 4vw, 3rem); }
+
+  .crumbs { display: flex; gap: 0.5rem; margin-bottom: 1.75rem; }
+  .crumbs a { text-decoration: none; }
+  .crumbs a:hover { color: var(--accent); }
+  .now { color: var(--accent); }
+
+  .titles { max-width: var(--measure); }
+
+  h1 {
+    font-size: clamp(2.1rem, 5vw, 3.1rem);
+    margin: 0.75rem 0 0.7rem;
+  }
+
+  .tagline {
+    margin: 0;
+    font-family: var(--font-serif);
+    font-size: 1.15rem;
+    color: var(--muted);
+    line-height: 1.5;
+    max-width: 52ch;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem 2.5rem;
+    margin: 2rem 0 0;
+    padding-top: 1.25rem;
+    border-top: var(--rule);
+  }
+
+  .meta dd { margin: 0.3rem 0 0; font-size: 0.8125rem; }
+
+  .links { display: flex; flex-wrap: wrap; gap: 1rem; }
+
+  .pending {
+    font-size: 0.75rem;
+    color: var(--warn);
+    border: 1px dashed color-mix(in srgb, var(--warn) 50%, var(--grid));
+    border-radius: 2px;
+    padding: 0.1em 0.45em;
+  }
+
+  /* Not a TODO. There is no public URL and there is not going to be one. */
+  .notpublic {
+    font-size: 0.75rem;
+    color: var(--muted);
+    border: var(--rule);
+    border-radius: 2px;
+    padding: 0.1em 0.45em;
+  }
+
+  .proofs { margin-top: 2.5rem; }
+  .proof-head { display: block; margin-bottom: 1rem; }
+
+  .proof-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1px;
+    background: var(--grid);
+    border: var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .proof {
+    background: var(--panel);
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .pv { font-size: 1.35rem; line-height: 1.2; }
+  .pl { font-size: 0.75rem; color: var(--muted); line-height: 1.45; }
+  .ps { font-size: 0.625rem; color: var(--muted); opacity: 0.75; margin-top: 0.3rem; }
+
+  .body { margin-top: 2.5rem; }
+
+  .log-head {
+    font-size: 1.35rem;
+    padding-top: 1.25rem;
+    border-top: var(--rule);
+    margin-bottom: 1.25rem;
+  }
+
+  .logs { display: grid; gap: 1rem; margin-bottom: 1.25rem; }
+
+  .logitem {
+    border-left: 2px solid var(--accent);
+    padding: 0.15rem 0 0.15rem 1rem;
+  }
+
+  .logitem h3 { font-size: 1.05rem; margin: 0 0 0.45rem; }
+
+  .lf, .ls { margin: 0 0 0.35rem; font-size: 0.875rem; line-height: 1.55; }
+  .lf { color: var(--muted); }
+
+  .lk {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    width: 4.2rem;
+  }
+
+  .lk.two { color: var(--verified); }
+
+  .stack { list-style: none; display: flex; flex-wrap: wrap; gap: 0.4rem; padding: 0; margin: 0; }
+
+  .stack li {
+    font-size: 0.75rem;
+    color: var(--muted);
+    border: var(--rule);
+    border-radius: 2px;
+    padding: 0.3em 0.6em;
+  }
+
+  .pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-top: 3.5rem;
+    padding-top: 1.25rem;
+    border-top: var(--rule);
+  }
+
+  .pg { display: flex; flex-direction: column; gap: 0.25rem; text-decoration: none; font-size: 0.9375rem; max-width: 45%; }
+  .pg.right { text-align: right; margin-left: auto; }
+  .pg:hover { color: var(--accent); }
+</style>

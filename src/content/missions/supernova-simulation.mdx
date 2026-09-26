@@ -1,0 +1,82 @@
+---
+title: Supernova Simulation
+tagline: A star swells, collapses and explodes in the browser. A separate NumPy model checks the physics.
+period: '2026'
+categories: ['Simulation']
+flagship: false
+order: 6
+status: verified
+headline:
+  value: '10,000'
+  label: 'Particles in the NumPy prototype that cross-checks the browser physics'
+  source: 'verification_output.txt'
+secondMetric:
+  first: 'The explosion looked right on screen, and looking right is most of the job in a visualisation.'
+  second: 'Looking right is not the physics being right. A separate NumPy implementation runs the same rules headless and logs the numbers, so the shader and the maths have to agree.'
+proof:
+  - value: '10,000'
+    label: 'Particles in the headless NumPy prototype'
+    source: 'verification_output.txt'
+  - value: '30.00'
+    label: 'Maximum tracked speed across every step, confirming the velocity clamp holds'
+    source: 'verification_output.txt'
+  - value: '3'
+    label: 'End states the mass you choose can produce: nebula, pulsar or black hole'
+stack:
+  - Three.js
+  - GLSL
+  - JavaScript
+  - NumPy
+links:
+  - label: 'Repository'
+    href: 'https://github.com/Sankalp895/Super_nova_simulations'
+confirm:
+  - 'The phase 1 log records a mean radius of 92.52 against a stated target of 70. Either the tuning behaviour or the log annotation needs correcting.'
+---
+
+## Problem
+
+A star's death is a sequence of regimes, not one event. It swells, the core gives way, the infall rebounds, and what is left over depends on how much mass there was to begin with. Most visualisations of this are animations: someone decided what it should look like and keyed it.
+
+I wanted the shape of the explosion to come out of rules rather than out of my hand, and I wanted a way to tell the difference.
+
+## Approach
+
+The interactive version runs in the browser on Three.js with custom GLSL shaders, so the particle motion is computed on the GPU and ten thousand points can move without the page dying. You set a solar mass, press space, and the star runs its life: hover, swell, collapse, bounce, explode, and settle into a nebula, a pulsar or a black hole depending on the mass.
+
+The part that matters for trusting it is the second implementation. A headless Python and NumPy prototype runs the same physics with no rendering at all, prints its state as it goes, and the log is committed to the repository. If the browser version and the NumPy version disagree, one of them is wrong, and I can see which.
+
+`MATH.md` documents the equations on their own, with no code, so the model can be checked without reading JavaScript.
+
+## System
+
+```text
+solar mass  ->  state machine: HOVER -> COLLAPSE -> BOUNCE -> EXPLOSION -> remnant
+                        |                                   |
+       Three.js + GLSL particle system            NumPy prototype, headless
+       (what you see, 10k points)                 (what gets checked, 10k points)
+                        |                                   |
+                   stellar HUD                    committed verification logs
+```
+
+## Results
+
+The verification logs are the result worth reporting.
+
+The collapse run confirms the state machine fires where it should: mean radius falls from 92.52, crosses the trigger at 11.81 against a threshold of 15.0, switches to EXPLOSION, and ends at 98.10. The velocity clamp holds at exactly 30.00 as the maximum tracked speed across every step of the run, which is the check that the bounce cannot launch a particle to infinity through a numerical accident.
+
+Neither of those is visible on screen. A particle moving too fast for one frame looks like a spark.
+
+## The bug I caught
+
+This one is still open, and it is in the log rather than in the code.
+
+During the hover phase the target radius is retuned at runtime from 50.0 to 70.0, and the log records the mean radius at step 150 as 92.52, annotated "should be expanding towards 70". It overshot the target by more than 30%, and the annotation says so without resolving it.
+
+I am leaving it visible rather than deleting the line. Either the relaxation towards the new target is too weak to catch up in the steps available, or the annotation describes an intention the code never implemented. Until I have run it down I would rather the repository record the disagreement than hide it.
+
+## Limits, and what I would do next
+
+This is a stylised model, not astrophysics. The particle system is tuned to be legible at interactive frame rates, the constants are chosen for that, and nothing here is in physical units. It should be read as an illustration of the sequence, not a prediction of any real star.
+
+The NumPy prototype checks the state machine and the clamps. It does not check energy conservation, which is the obvious next test and the one most likely to find something.

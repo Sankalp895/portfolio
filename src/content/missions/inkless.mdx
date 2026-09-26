@@ -1,0 +1,93 @@
+---
+title: inkless
+tagline: Markdown to a typeset PDF, with the PDF format written out byte by byte. No dependencies.
+period: '2026'
+categories: ['Backend']
+flagship: true
+order: 3
+status: verified
+headline:
+  value: '0 bytes'
+  label: 'The size of requirements.txt, and that is not an oversight'
+  source: 'requirements.txt'
+secondMetric:
+  first: 'The output looked right, and the tests passed.'
+  second: 'Looking right is not being reproducible. A test walks the syntax tree and fails the build if the engine imports a clock, so the same input cannot quietly produce a different file tomorrow.'
+proof:
+  - value: '0'
+    label: 'Third-party dependencies. Python standard library only'
+    source: 'requirements.txt, 0 bytes'
+  - value: '151'
+    label: 'Test functions, 52 of them table-driven with subTest'
+    source: 'test_inkless.py'
+  - value: 'SHA-256'
+    label: 'A rebuild in an empty virtualenv is byte-identical to the committed example'
+    source: 'deps-proof.txt'
+  - value: '5,433 / 2,886'
+    label: 'Lines of engine against lines of test'
+stack:
+  - 'Python standard library only'
+  - 'Hand-written Markdown parser'
+  - 'PDF object model and writer'
+  - 'PNG chunk parser'
+  - zlib
+  - unittest
+links:
+  - label: 'Repository'
+    href: 'https://github.com/Sankalp895/inkless'
+confirm: []
+---
+
+## Problem
+
+Turning Markdown into a good-looking PDF normally means installing a stack: a Markdown parser, an HTML renderer, a browser engine to lay the HTML out, and a PDF library at the end. That is a lot of machinery, and every piece of it is a thing that can break, change behaviour between versions, or quietly render differently on someone else's machine.
+
+I wanted to know what was actually underneath. So I wrote the whole path myself, with nothing installed.
+
+## Approach
+
+A PDF is less mysterious than it looks. It is eight value types, a set of numbered indirect objects, a table of byte offsets pointing at them, and a trailer. I wrote that object model and its writer directly, so the file is assembled byte by byte.
+
+The Markdown parser is hand-written and scans by character index rather than using regular expressions. That is a deliberate trade. A regex parser hands back spans; scanning by index hands back the byte offset, line and column of every token, which is what makes it possible to point a caret at the exact character that caused a problem.
+
+Images needed PNG chunk parsing and scanline unfiltering, which sounds worse than it is. PDF's FlateDecode already understands PNG predictors, and `zlib` is in the standard library, so a truecolour image can pass through almost untouched.
+
+Fonts are the last thing people assume they need a library for. Conforming PDF readers are required to supply the standard 14 fonts, so nothing has to be embedded. Only the advance widths are needed, and those are published constants.
+
+## System
+
+```text
+document.md
+    |
+    v
+front matter reader  ->  character-scanning parser  ->  syntax tree
+                                                            |
+                                            layout: line breaking, justification,
+                                            tables, code panels, page boxes
+                                                            |
+            standard-14 font metrics  ->  PDF object model  ->  byte writer
+                                                            |
+                                          xref table + trailer  ->  document.pdf
+```
+
+## Results
+
+The headline is the empty `requirements.txt`. The interesting result is the one underneath it.
+
+A rebuild inside a fresh, empty virtualenv produces a file that is byte-identical to the committed example, confirmed by SHA-256. That is a stronger claim than "it works", because it means the output depends on the input and nothing else: not on the day, not on the machine, not on which version of some library happened to be installed.
+
+The test suite is 151 functions across 2,886 lines, against 5,433 lines of engine. Fifty-two of the tests are table-driven, so a failure reports the exact input tuple that broke rather than just a line number.
+
+## The bug I caught
+
+Reproducibility is easy to claim and easy to lose. A single `datetime.now()` in a metadata field is enough to make every build different, and it would never show up as a failing test, because nothing else would change.
+
+So the check is structural rather than behavioural. A test parses the engine's own source into a syntax tree and walks it, asserting that `time`, `datetime`, `calendar`, `random` and `uuid` are never imported. The engine cannot read the clock, so it cannot produce a different file tomorrow. The `--date` flag exists so a document can carry a date without the program ever asking what today is.
+
+The same test bans `re`. Not because regular expressions are bad, but because a Markdown parser built on them tends to handle only the inputs its author thought of.
+
+## Limits, and what I would do next
+
+It typesets the Markdown I implemented, not CommonMark in full. The standard 14 fonts mean no custom typefaces and no scripts outside Latin-1, which rules out a lot of the world's text.
+
+Line breaking is greedy, one line at a time. Knuth-Plass would break paragraphs as a whole and look noticeably better, and it is the obvious next thing.

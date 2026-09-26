@@ -1,0 +1,301 @@
+---
+import Base from '@/layouts/Base.astro';
+import { profile, spokenLanguages, certifications } from '@/data/profile';
+import { experience, timeline } from '@/data/experience';
+import { hasPhoto } from '@/data/assets';
+---
+
+<Base
+  title="About"
+  description="Sankalp Singh: two years of maths and physics, an aeromodelling certificate, and a habit of checking the second metric."
+>
+  <section class="shell top">
+    <div class="intro">
+      <div class="words">
+        <p class="label">About</p>
+        <h1>I started with maths and physics, and I never really left.</h1>
+        <div class="story">
+          <p>
+            My degree is in AI and Data Science, but the first two years were mathematics and physics.
+            That turned out to be the useful part. The linear algebra is what makes a Kalman filter make
+            sense, and the mechanics is what makes a drone in simulation behave like a body rather than a
+            sprite.
+          </p>
+          <p>
+            Before any of that I was building model aircraft. I have the aeromodelling certificate to show
+            for it. Flying something you built yourself teaches you quickly that a thing can look correct
+            on the bench and still be wrong in the air.
+          </p>
+          <p>
+            That is the thread through everything here. I like simulations because they let me build a
+            whole system and then attack it. My best work is usually the moment I found out my own result
+            was not what I thought it was: the clearance check that passed nine times on a broken assembly,
+            the early-warning signal that fired on zero of eight seeds, the deliberately unintelligent
+            baseline that beat everything I had built.
+          </p>
+          <p>
+            Next is an M.Sc. abroad for 2027, in Computational Science, Scientific Computing, CS or
+            Robotics. I am looking at Germany, the Netherlands, Norway and the USA, and I am learning
+            German for the first of those.
+          </p>
+        </div>
+      </div>
+
+      <aside class="side">
+        {hasPhoto ? (
+          <figure class="photo panel">
+            <img
+              src="/media/portrait.jpg"
+              alt="Sankalp Singh"
+              width="900"
+              height="900"
+              loading="lazy"
+              decoding="async"
+            />
+          </figure>
+        ) : (
+          <div class="photo panel photo-empty">
+            <span class="label">Photo to add</span>
+            <p class="phint">A square photo on a plain background goes here.</p>
+          </div>
+        )}
+
+        <dl class="quick">
+          <div>
+            <dt class="label">Based in</dt>
+            <dd>{profile.location}</dd>
+          </div>
+          <div>
+            <dt class="label">Languages</dt>
+            <dd>
+              {spokenLanguages.map((l) => (
+                <span class="lang">{l.name} <span class="lvl mono">{l.level}</span></span>
+              ))}
+            </dd>
+          </div>
+          <div>
+            <dt class="label">Certifications</dt>
+            <dd>
+              {certifications.map((c) => <span class="lang">{c.name}</span>)}
+            </dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+  </section>
+
+  <section class="shell block">
+    <h2 class="sec">Timeline</h2>
+    <ol class="tl">
+      {timeline.map((t) => (
+        <li class:list={['tli', t.kind]}>
+          <span class="yr mono">{t.year}</span>
+          <div class="tc">
+            <h3>{t.title}</h3>
+            <p>{t.body}</p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="shell block" id="experience">
+    <h2 class="sec">Experience</h2>
+    <ol class="exp">
+      {experience.map((e) => (
+        <li class="job">
+          <div class="jhead">
+            <div>
+              <h3>{e.role}</h3>
+              <p class="org">{e.org}, {e.location}</p>
+            </div>
+            <span class="dates mono">{e.start} to {e.end}</span>
+          </div>
+          <ul class="hl">
+            {e.highlights.map((h) => <li>{h}</li>)}
+          </ul>
+          <ul class="stack">
+            {e.stack.map((s) => <li class="mono">{s}</li>)}
+          </ul>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="shell block">
+    <div class="cta panel">
+      <p>The work itself is more useful than this page.</p>
+      <div class="ctal">
+        <a href="/missions/" class="btn btn-accent">Missions</a>
+        <a href="/rigor-log/" class="btn">Rigor Log</a>
+        <a href="/resume/" class="btn">Resume</a>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .top { padding-top: clamp(2rem, 5vw, 3.5rem); }
+
+  .intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.7fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: start;
+  }
+
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0.75rem 0 1.25rem;
+    max-width: 20ch;
+  }
+
+  .story {
+    max-width: var(--measure);
+    font-family: var(--font-serif);
+    font-size: 1.0625rem;
+    line-height: 1.7;
+  }
+
+  .story p { margin: 0 0 1.1rem; }
+
+  .side { display: grid; gap: 1.5rem; position: sticky; top: 100px; }
+
+  .photo {
+    aspect-ratio: 1;
+    margin: 0;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    /* The original is a passport shot on a pale background. In Mission mode a
+       straight paste looks like a cut-out, so the edges are eased into the panel. */
+    filter: saturate(0.92) contrast(1.02);
+  }
+
+  .photo-empty {
+    display: grid;
+    place-content: center;
+    gap: 0.4rem;
+    text-align: center;
+    padding: 1rem;
+    border-style: dashed;
+  }
+
+  .phint { margin: 0; font-size: 0.75rem; color: var(--muted); max-width: 22ch; }
+
+  .quick { margin: 0; display: grid; gap: 1rem; }
+  .quick dd { margin: 0.3rem 0 0; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.875rem; }
+  .lvl { font-size: 0.6875rem; color: var(--muted); }
+
+  .block { margin-top: clamp(3rem, 7vw, 5rem); }
+
+  .sec {
+    font-size: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: var(--rule);
+    margin-bottom: 1.75rem;
+  }
+
+  .tl { list-style: none; margin: 0; padding: 0; }
+
+  .tli {
+    display: grid;
+    grid-template-columns: 110px minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 0 0 1.75rem 0;
+    position: relative;
+  }
+
+  .tli::before {
+    content: '';
+    position: absolute;
+    left: 118px;
+    top: 0.55rem;
+    bottom: 0;
+    width: 1px;
+    background: var(--grid);
+  }
+
+  .tli:last-child::before { display: none; }
+
+  .tc { position: relative; padding-left: 1.5rem; }
+
+  .tc::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 0.45rem;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 1.5px solid var(--accent);
+  }
+
+  .tli.plan .tc::before { border-color: var(--muted); }
+
+  .yr { font-size: 0.75rem; color: var(--accent); padding-top: 0.2rem; }
+  .tc h3 { font-size: 1.1rem; margin: 0 0 0.35rem; }
+  .tc p { margin: 0; font-size: 0.9375rem; color: var(--muted); line-height: 1.6; max-width: 62ch; }
+
+  .exp { list-style: none; margin: 0; padding: 0; display: grid; gap: 2rem; }
+
+  .job { padding-bottom: 2rem; border-bottom: var(--rule); }
+  .job:last-child { border-bottom: 0; padding-bottom: 0; }
+
+  .jhead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.9rem;
+  }
+
+  .job h3 { font-size: 1.2rem; margin: 0; }
+  .org { margin: 0.2rem 0 0; font-size: 0.875rem; color: var(--muted); }
+  .dates { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+
+  .hl { margin: 0 0 0.9rem; padding-left: 1.1rem; }
+  .hl li { font-size: 0.9375rem; line-height: 1.6; margin-bottom: 0.3rem; }
+
+  .stack { list-style: none; display: flex; flex-wrap: wrap; gap: 0.35rem; padding: 0; margin: 0; }
+
+  .stack li {
+    font-size: 0.6875rem;
+    color: var(--muted);
+    border: var(--rule);
+    border-radius: 2px;
+    padding: 0.25em 0.5em;
+  }
+
+  .cta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 1.5rem;
+  }
+
+  .cta p { margin: 0; font-family: var(--font-serif); font-size: 1.1rem; }
+  .ctal { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+  @media (max-width: 900px) {
+    .intro { grid-template-columns: 1fr; }
+    .side { position: static; grid-template-columns: repeat(2, 1fr); align-items: start; }
+    .photo { max-width: 240px; }
+  }
+
+  @media (max-width: 640px) {
+    .side { grid-template-columns: 1fr; }
+    .tli { grid-template-columns: 1fr; gap: 0.35rem; }
+    .tli::before { display: none; }
+    .tc { padding-left: 1.1rem; }
+  }
+</style>

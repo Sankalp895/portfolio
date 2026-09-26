@@ -1,0 +1,97 @@
+---
+title: Adversarial Swarm Defence Sim
+tagline: A GAN learns to disguise a drone attack. A detector learns to catch it anyway.
+period: 2025 to 2026
+categories: ['ML', 'Robotics', 'Security']
+flagship: true
+order: 2
+status: verified
+headline:
+  value: '6.0'
+  label: 'The output scale that fixed a critic winning for the wrong reason'
+  source: 'config.yaml, gan.generator.output_scale'
+secondMetric:
+  first: 'The critic separated real swarms from generated ones, so the GAN looked like it was training.'
+  second: 'It was separating them by magnitude alone. A bare Tanh output covers under 40% of the real feature range, so the critic never had to look at the behaviour. That is what broke run 1.'
+proof:
+  - value: '6.0'
+    label: 'Generator output scale, after a bare Tanh reached under 40% of the real feature range'
+    source: 'config.yaml, gan.generator.output_scale'
+  - value: '55 vs 145'
+    label: 'Epoch where mode collapse arrived with minibatch-std and DiffAugment, against without them'
+    source: 'config.yaml, gan.discriminator.minibatch_std'
+  - value: '560'
+    label: 'Samples in the dataset, 10 features across 99 timesteps'
+    source: 'config.yaml'
+  - value: '4'
+    label: 'Swarm behaviours the classifiers separate'
+stack:
+  - WGAN-GP
+  - TCN
+  - Multi-sensor fusion (radar, optical, acoustic, RF)
+  - Three.js
+  - Python
+  - WebSocket
+links:
+  - label: 'Repository'
+    href: 'https://github.com/Sankalp895/adversarial-swarm-defense'
+confirm:
+  - 'Add the 4C to 4G screenshots to /public/media/swarm-defence-sim/.'
+---
+
+## Problem
+
+If you build a detector for hostile drones, you test it against the attacks you thought of. That is the whole weakness. A real attacker adapts, and your test set does not.
+
+So I put the attacker inside the simulation. A generative adversarial network, a GAN, is two networks in a contest: one makes fakes, the other tries to spot them, and both get better by losing to each other. Here the generator's job is to make an attacking swarm move like an ordinary one, and the defence's job is to catch it anyway.
+
+The question I actually wanted answered: after the attacker has done its best, what is left that still gives it away?
+
+## Approach
+
+The simulator runs 3D drone swarms in Python and streams them to a Three.js view over a WebSocket, so I can watch a run instead of reading a log.
+
+The defence is a TCN, a temporal convolutional network, which reads a whole track of motion over time rather than a single frame. The baseline classifier clears 80% accuracy on the threat classes.
+
+The attacker is a WGAN-GP, a GAN variant that trains far more stably than the original recipe. It learns to reshape a threat trajectory until the classifier reads it as benign.
+
+Later phases moved from one sensor to four: radar, optical, acoustic and RF, fused together, with the detector calibrated rather than left on a raw score.
+
+## System
+
+```text
+swarm sim (Python, 3D)  ->  per-drone tracks  ->  TCN classifier  ->  threat / benign
+        |                          ^
+        |                          |
+        +-> WGAN-GP generator -----+   (attacker tries to look benign)
+
+radar + optical + acoustic + RF  ->  fusion  ->  calibrated detection  ->  track manager
+                                                                              |
+                                                                    ghost-track survival
+```
+
+## Results
+
+The finding is an asymmetry, not a score. Some threat signatures turn out to be fully disguisable, and a fast converging attack run is one of them. A patrol's centroid drift is not. The generator could not remove it however long adversarial training ran.
+
+That asymmetry is the useful part. If disguise worked uniformly, detection would be hopeless; if it never worked, there would be no problem. Because it works on some behaviours and not others, the question becomes which signatures are irreducible, and those are the ones a defence should be built on.
+
+Downstream of that, the project grew into a full defence simulator: four sensor types fused together, an adaptive doctrine, and an economy that prices the whole engagement. The economic model produces the result I did not expect. A defender can win every single engagement and still lose, once the cost-exchange ratio, defender spend divided by attacker spend, goes above 1.
+
+I am not quoting detection percentages here. The numbers I have came from local runs whose outputs are not in the public repository, so there is nothing a reader could check them against. When the evaluation notebooks are committed with their outputs, the numbers go back in.
+
+## The bug I caught
+
+The GAN was training. The critic was separating real swarms from generated ones, the losses moved, and nothing crashed.
+
+It was separating them by magnitude. The real normalised features span roughly minus 2.78 to plus 5.47, and a bare Tanh generator output only reaches minus 1 to plus 1, which is under 40% of the range the real data occupies. The critic never had to learn anything about how a swarm moves. It just had to notice which inputs were too small, and that is what broke the first run into loss divergence and mode collapse. Rescaling the generator output by 6.0 fixed it.
+
+The second one cost me more time. minibatch standard deviation and DiffAugment are both well-established GAN stabilisers, proven on image datasets. I added them, and rather than assuming they helped, I measured when mode collapse arrived. With them, epoch 55. Without them, epoch 145. They made it worse on a 560-sample, 10 by 99 dataset, so I turned both off and left the code in the repository with the reason written next to the switch.
+
+## Limits, and what I would do next
+
+The attacker and the defender share my simulator, so they also share my assumptions about how drones move and how sensors fail. A GAN that beats a detector inside my physics has beaten my physics, not the real world.
+
+The sensor models are simplified. Real radar has clutter and multipath, real RF has a congested spectrum, and real acoustic sensing outdoors is mostly wind.
+
+Next: test the trained detector against attack patterns generated by a different method than the one it trained against. If it only catches WGAN-GP disguises, it has learned the generator, not the threat.

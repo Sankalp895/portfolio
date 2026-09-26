@@ -1,0 +1,241 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '@/layouts/Base.astro';
+
+const log = (await getCollection('rigor-log')).sort((a, b) => a.data.order - b.data.order);
+const projects = Array.from(new Set(log.map((l) => l.data.project)));
+const missions = await getCollection('missions');
+const missionIds = new Set(missions.map((m) => m.id));
+
+const hrefFor = (slug?: string) => {
+  if (!slug) return null;
+  return missionIds.has(slug) ? `/missions/${slug}/` : `/research/${slug}/`;
+};
+---
+
+<Base
+  title="Rigor Log"
+  description="Every time a second, independent metric disagreed with the first one: what each metric said, what the fix was, and the lesson."
+>
+  <section class="shell top">
+    <p class="label">Rigor Log</p>
+    <h1>Every entry here is a moment I was about to be wrong in public.</h1>
+    <p class="lede">
+      One metric said the work was fine. A second, independent metric said it was not. This page is the
+      list, with what each one said and what I changed. Some entries are bugs I caught. A few are checks
+      that passed, which counts too, because the point is the check and not the outcome.
+    </p>
+    <div class="stats">
+      <div><span class="sv metric">{log.length}</span><span class="sl">entries</span></div>
+      <div><span class="sv metric">{projects.length}</span><span class="sl">projects</span></div>
+      <div><span class="sv metric">{log.filter((l) => l.data.severity === 'silent').length}</span><span class="sl">would have shipped silently</span></div>
+    </div>
+  </section>
+
+  <section class="shell">
+    <ol class="log">
+      {log.map((l) => {
+        const d = l.data;
+        const href = hrefFor(d.projectSlug);
+        return (
+          <li class="entry" id={l.id}>
+            <div class="rail">
+              <span class="num mono">{String(d.order).padStart(2, '0')}</span>
+              <span class:list={['sev', d.severity]}>{d.severity === 'silent' ? 'silent' : 'caught'}</span>
+            </div>
+
+            <div class="body">
+              <header>
+                <h2>{d.title}</h2>
+                <span class="projwrap">
+                  {href ? (
+                    <a href={href} class="proj mono">{d.project}</a>
+                  ) : (
+                    <span class="proj mono">{d.project}</span>
+                  )}
+                  {d.source && <span class="src mono">{d.source}</span>}
+                </span>
+              </header>
+
+              <div class="metrics">
+                <div class="m first">
+                  <span class="mk label">First metric said</span>
+                  <p>{d.firstMetric}</p>
+                </div>
+                <div class="m second">
+                  <span class="mk label">Second metric said</span>
+                  <p>{d.secondMetric}</p>
+                </div>
+              </div>
+
+              <div class="tail">
+                <div class="t">
+                  <span class="mk label">Fix</span>
+                  <p>{d.fix}</p>
+                </div>
+                <div class="t lesson">
+                  <span class="mk label">Lesson</span>
+                  <p>{d.lesson}</p>
+                </div>
+              </div>
+
+              {d.confirm.length > 0 && (
+                <div class="todo">
+                  <span class="badge badge-review">TODO: confirm</span>
+                  <ul>{d.confirm.map((c) => <li>{c}</li>)}</ul>
+                </div>
+              )}
+            </div>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+</Base>
+
+<style>
+  .top { padding-top: clamp(2rem, 5vw, 3.5rem); margin-bottom: 3rem; }
+
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.8rem);
+    margin: 0.75rem 0 0.9rem;
+    max-width: 22ch;
+  }
+
+  .lede {
+    margin: 0;
+    max-width: 64ch;
+    color: var(--muted);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  .stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.5rem;
+    margin-top: 2rem;
+    padding-top: 1.25rem;
+    border-top: var(--rule);
+  }
+
+  .stats div { display: flex; flex-direction: column; gap: 0.15rem; }
+  .sv { font-size: 1.6rem; line-height: 1; }
+  .sl { font-size: 0.75rem; color: var(--muted); }
+
+  .log { list-style: none; margin: 0; padding: 0; }
+
+  .entry {
+    display: grid;
+    grid-template-columns: 78px minmax(0, 1fr);
+    gap: 1.5rem;
+    padding: 2rem 0;
+    border-top: var(--rule);
+    scroll-margin-top: 100px;
+  }
+
+  .entry:last-child { border-bottom: var(--rule); }
+
+  .rail { display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+
+  .num { font-size: 1.1rem; color: var(--accent); }
+
+  .sev {
+    font-family: var(--font-mono);
+    font-size: 0.5625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.2em 0.45em;
+    border-radius: 2px;
+    border: 1px solid currentColor;
+  }
+
+  .sev.silent { color: var(--warn); }
+  .sev.loud { color: var(--verified); }
+
+  .body header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.1rem;
+  }
+
+  h2 { font-size: clamp(1.15rem, 2.4vw, 1.5rem); margin: 0; max-width: 34ch; }
+
+  .projwrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.2rem;
+    text-align: right;
+  }
+
+  .proj {
+    font-size: 0.6875rem;
+    color: var(--muted);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* Where a reader can go and check the claim. */
+  .src {
+    font-size: 0.625rem;
+    color: var(--muted);
+    opacity: 0.75;
+  }
+
+  a.proj:hover { color: var(--accent); }
+
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    background: var(--grid);
+    border: var(--rule);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .m { background: var(--panel); padding: 1rem 1.1rem; }
+  .m.second { background: var(--panel-raised); border-left: 2px solid var(--verified); }
+
+  .mk { display: block; margin-bottom: 0.45rem; }
+  .m.second .mk { color: var(--verified); }
+
+  .m p { margin: 0; font-size: 0.9375rem; line-height: 1.6; }
+  .m.first p { color: var(--muted); }
+
+  .tail {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.1rem;
+  }
+
+  .t p { margin: 0.35rem 0 0; font-size: 0.875rem; line-height: 1.6; color: var(--muted); }
+  .t.lesson p { color: var(--ink); font-family: var(--font-serif); font-size: 0.9375rem; }
+
+  .todo {
+    display: flex;
+    gap: 0.75rem;
+    align-items: flex-start;
+    margin-top: 1.1rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px dashed color-mix(in srgb, var(--warn) 50%, var(--grid));
+    border-radius: var(--radius);
+    background: var(--warn-soft);
+  }
+
+  .todo ul { margin: 0; padding-left: 1.1rem; }
+  .todo li { font-size: 0.8125rem; line-height: 1.5; }
+
+  @media (max-width: 800px) {
+    .entry { grid-template-columns: 1fr; gap: 0.9rem; }
+    .rail { flex-direction: row; align-items: center; gap: 0.75rem; }
+    .metrics { grid-template-columns: 1fr; }
+    .m.second { border-left: 0; border-top: 2px solid var(--verified); }
+    .tail { grid-template-columns: 1fr; gap: 1rem; }
+  }
+</style>

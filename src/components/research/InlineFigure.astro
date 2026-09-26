@@ -1,0 +1,50 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props {
+  /** File name inside src/generated/figures, without the extension. */
+  name: string;
+  caption: string;
+  source: string;
+}
+
+const { name, caption, source } = Astro.props;
+
+// Inlined rather than linked, so the SVG can read the page's colour tokens and
+// follow the theme without a second file.
+const svg = readFileSync(join(process.cwd(), 'src/generated/figures', `${name}.svg`), 'utf8');
+---
+
+<figure class="ifig">
+  <div class="ifig-plate" set:html={svg} />
+  <figcaption>
+    {caption}
+    <span class="ifig-src mono">Redrawn for this page from {source}</span>
+  </figcaption>
+</figure>
+
+<style>
+  .ifig { margin: 2.5rem 0; }
+
+  .ifig-plate {
+    border: var(--rule);
+    border-radius: var(--radius);
+    background: var(--panel);
+    padding: 1.1rem;
+  }
+
+  .ifig-plate :global(svg) { width: 100%; height: auto; display: block; }
+
+  figcaption {
+    margin-top: 0.9rem;
+    font-size: 0.8125rem;
+    color: var(--muted);
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .ifig-src { font-size: 0.6875rem; opacity: 0.85; }
+</style>
